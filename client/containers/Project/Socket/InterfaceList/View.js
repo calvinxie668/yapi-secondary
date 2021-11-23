@@ -437,7 +437,7 @@ class View extends Component {
                 {this.props.curData.method}
               </span>
               <span className="colValue">
-                {this.props.curData.res_msg_type}
+                {this.props.curData.path}
               </span>
               <Tooltip title="复制路径">
                 <Icon

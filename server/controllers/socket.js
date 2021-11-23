@@ -202,6 +202,7 @@ class socketController extends baseController {
     params.method = params.method.toUpperCase();
     params.req_params = params.req_params || [];
     params.res_body_type = params.res_body_type ? params.res_body_type.toLowerCase() : 'json';
+    params.path = params.method === 'PULL' ? params.req_msg_type : params.push_msg_type;
       
       let checkRepeat = await this.Model.checkRepeat(params.project_id, params.path, params.method);
 
