@@ -84,9 +84,7 @@ class socketMockController extends baseController {
               body: ctx.request.body,
               params: Object.assign({}, ctx.request.query, ctx.request.body)
             });
-            console.log('res',res)
           }
-  
           try {
             res = Mock.mock(res);
           } catch (e) {
@@ -173,7 +171,6 @@ class socketMockController extends baseController {
             });
             console.log('res',res)
           }
-  
           try {
             res = Mock.mock(res);
           } catch (e) {
@@ -193,7 +190,7 @@ class socketMockController extends baseController {
         }
         // console.log(context.mockJson);
         // const content = JSON.stringify(context.mockJson.data);
-        console.log(context.mockJson.data)
+        // console.log(context.mockJson.data)
         const callback = () => {
           console.log('this is a cron job!')
           return new Promise((resolve) => {
