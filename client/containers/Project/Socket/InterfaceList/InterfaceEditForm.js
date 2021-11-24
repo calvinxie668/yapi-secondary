@@ -90,7 +90,7 @@ const RadioButton = Radio.Button;
 const RadioGroup = Radio.Group;
 const dataTpl = {
   req_query: { name: '', required: '1', desc: '', example: '' },
-  req_headers: { name: '', required: '1', desc: '', example: '' },
+  // req_headers: { name: '', required: '1', desc: '', example: '' },
   req_params: { name: '', desc: '', example: '' },
   req_body_form: {
     name: '',
@@ -137,9 +137,9 @@ class InterfaceEditForm extends Component {
     if (curdata.req_query && curdata.req_query.length === 0) {
       delete curdata.req_query;
     }
-    if (curdata.req_headers && curdata.req_headers.length === 0) {
-      delete curdata.req_headers;
-    }
+    // if (curdata.req_headers && curdata.req_headers.length === 0) {
+    //   delete curdata.req_headers;
+    // }
     if (curdata.req_body_form && curdata.req_body_form.length === 0) {
       delete curdata.req_body_form;
     }
@@ -179,13 +179,13 @@ class InterfaceEditForm extends Component {
           }
         ],
 
-        req_headers: [
-          {
-            name: '',
-            value: '',
-            required: '1'
-          }
-        ],
+        // req_headers: [
+        //   {
+        //     name: '',
+        //     value: '',
+        //     required: '1'
+        //   }
+        // ],
 
         req_body_type: 'form',
         req_body_form: [
@@ -263,49 +263,49 @@ class InterfaceEditForm extends Component {
 
           values.method = this.state.method;
           values.req_params = values.req_params || [];
-          values.req_headers = values.req_headers || [];
+          // values.req_headers = values.req_headers || [];
           values.req_body_form = values.req_body_form || [];
           let isfile = false,
             isHaveContentType = false;
-          if (values.req_body_type === 'form') {
-            values.req_body_form.forEach(item => {
-              if (item.type === 'file') {
-                isfile = true;
-              }
-            });
+          // if (values.req_body_type === 'form') {
+          //   values.req_body_form.forEach(item => {
+          //     if (item.type === 'file') {
+          //       isfile = true;
+          //     }
+          //   });
 
-            values.req_headers.map(item => {
-              if (item.name === 'Content-Type') {
-                item.value = isfile ? 'multipart/form-data' : 'application/x-www-form-urlencoded';
-                isHaveContentType = true;
-              }
-            });
-            if (isHaveContentType === false) {
-              values.req_headers.unshift({
-                name: 'Content-Type',
-                value: isfile ? 'multipart/form-data' : 'application/x-www-form-urlencoded'
-              });
-            }
-          } else if (values.req_body_type === 'json') {
-            values.req_headers
-              ? values.req_headers.map(item => {
-                  if (item.name === 'Content-Type') {
-                    item.value = 'application/json';
-                    isHaveContentType = true;
-                  }
-                })
-              : [];
-            if (isHaveContentType === false) {
-              values.req_headers = values.req_headers || [];
-              values.req_headers.unshift({
-                name: 'Content-Type',
-                value: 'application/json'
-              });
-            }
-          }
-          values.req_headers = values.req_headers
-            ? values.req_headers.filter(item => item.name !== '')
-            : [];
+          //   values.req_headers.map(item => {
+          //     if (item.name === 'Content-Type') {
+          //       item.value = isfile ? 'multipart/form-data' : 'application/x-www-form-urlencoded';
+          //       isHaveContentType = true;
+          //     }
+          //   });
+          //   if (isHaveContentType === false) {
+          //     values.req_headers.unshift({
+          //       name: 'Content-Type',
+          //       value: isfile ? 'multipart/form-data' : 'application/x-www-form-urlencoded'
+          //     });
+          //   }
+          // } else if (values.req_body_type === 'json') {
+          //   values.req_headers
+          //     ? values.req_headers.map(item => {
+          //         if (item.name === 'Content-Type') {
+          //           item.value = 'application/json';
+          //           isHaveContentType = true;
+          //         }
+          //       })
+          //     : [];
+          //   if (isHaveContentType === false) {
+          //     values.req_headers = values.req_headers || [];
+          //     values.req_headers.unshift({
+          //       name: 'Content-Type',
+          //       value: 'application/json'
+          //     });
+          //   }
+          // }
+          // values.req_headers = values.req_headers
+          //   ? values.req_headers.filter(item => item.name !== '')
+          //   : [];
 
           values.req_body_form = values.req_body_form
             ? values.req_body_form.filter(item => item.name !== '')
@@ -875,7 +875,7 @@ class InterfaceEditForm extends Component {
               label="请求消息类型"
             >
               {getFieldDecorator('req_msg_type', {
-                initialValue: this.state.res_msg_type,
+                initialValue: this.state.req_msg_type,
                 rules: [{
                   required: true, message: '请输入请求消息类型!'
                 }]
@@ -1050,13 +1050,13 @@ class InterfaceEditForm extends Component {
               </Col>
             </Row>
 
-            <FormItem className={'interface-edit-item ' + this.state.hideTabs.req.headers}>
+            {/* <FormItem className={'interface-edit-item ' + this.state.hideTabs.req.headers}>
               <Button size="small" type="primary" onClick={() => this.addParams('req_headers')}>
                 添加Header
               </Button>
-            </FormItem>
+            </FormItem> */}
 
-            <Row className={'interface-edit-item ' + this.state.hideTabs.req.headers}>
+            {/* <Row className={'interface-edit-item ' + this.state.hideTabs.req.headers}>
               <Col>
                 <EasyDragSort
                   data={() => this.props.form.getFieldValue('req_headers')}
@@ -1066,7 +1066,7 @@ class InterfaceEditForm extends Component {
                   {headerList}
                 </EasyDragSort>
               </Col>
-            </Row>
+            </Row> */}
             {HTTP_METHOD[this.state.method].request_body ? (
               <div>
                 <FormItem className={'interface-edit-item ' + this.state.hideTabs.req.body}>
