@@ -42,9 +42,8 @@ class socketMockController extends baseController {
  * @returns 
  */
   async getMockJson(ctx) {
-    const { res_msg_type } = ctx.params;
-  
-    let socket_list = await this.socketModel.listByReqMsgType(res_msg_type);
+    const { req_msg_type } = ctx.params;
+    let socket_list = await this.socketModel.listByReqMsgType(req_msg_type);
     if(!socket_list) {
       const result = {
         success: false,
@@ -228,7 +227,7 @@ class socketMockController extends baseController {
             }
           })
         }
-        
+
         const result = await startCron('cron' + cron_id, 1, callback);
         if(result && result.code === 200) {
           ctx.body = yapi.commons.resReturn({success: true, msg: '开始推送', data: null})
