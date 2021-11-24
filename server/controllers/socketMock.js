@@ -47,15 +47,15 @@ class socketMockController extends baseController {
     if(!socket_list) {
       const result = {
         success: false,
-        msg: '失败',
+        msg: '请求参数不存在',
         code: 100,
         content: null,
       }
       return ctx.body = result;
     }
     let mock_data = await this.advModel.get(socket_list._id);
-    let mock_script = mock_data.mock_script;
-    let is_mock_open =mock_data.enable;
+    let mock_script = mock_data && mock_data.mock_script;
+    let is_mock_open =mock_data && mock_data.enable;
     try {
       let res;
       res = socket_list.res_body;
@@ -141,8 +141,8 @@ class socketMockController extends baseController {
     const { topic_id, push_msg_type, push_msg_body } = socket_list;
     let mock_data = await this.advModel.get(socket_id);
 
-    let mock_script = mock_data.mock_script;
-    let is_mock_open =mock_data.enable;
+    let mock_script = mock_data && mock_data.mock_script;
+    let is_mock_open = mock_data && mock_data.enable;
     try {
       let res;
       res = socket_list.res_body;
