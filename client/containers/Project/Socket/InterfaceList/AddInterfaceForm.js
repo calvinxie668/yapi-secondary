@@ -188,7 +188,7 @@ class AddInterfaceForm extends Component {
             {...formItemLayout}
             label="topicId"
           >
-            {getFieldDecorator('topicId', {
+            {getFieldDecorator('topic_id', {
               rules: [{
                 required: true, message: '请输入topicId!'
               }]

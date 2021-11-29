@@ -8,7 +8,7 @@ import { Form, Switch, Button, message, Icon, Tooltip, Radio, Table, Row, Col, D
 import MockCol from './MockCol/MockCol.js';
 import mockEditor from 'client/components/AceEditor/mockEditor';
 import constants from '../../client/constants/variable.js';
-import { getCronList } from '../../client/reducer/modules/cron.js'
+import { getCronList, updateCron } from '../../client/reducer/modules/cron.js'
 import { formatTime } from '../../client/common.js';
 import _ from 'lodash';
 const FormItem = Form.Item;
@@ -21,7 +21,8 @@ const FormItem = Form.Item;
     }
   },
   {
-    getCronList
+    getCronList,
+    updateCron
   }
 )
 class AdvMock extends Component {
@@ -79,6 +80,11 @@ class AdvMock extends Component {
           }
         },
         {
+          title: '创建人',
+          key: 'username',
+          dataIndex: 'username'
+        },
+        {
           title: '创建时间',
           key: 'add_time',
           dataIndex: 'add_time',
@@ -104,10 +110,10 @@ class AdvMock extends Component {
           children: [
             {
               title: '是否开启推送',
-              key: 'push_switch',
+              key: 'push_switch_status',
               render: (text, record) => {
                 return (
-                  <Switch checkedChildren="开" unCheckedChildren="关" onChange={(checked) => this.handlePushSwitch(checked, record)}/>
+                  <Switch checkedChildren="开" unCheckedChildren="关" checked={text.push_switch_status} onChange={(checked) => this.handlePushSwitch(checked, record)}/>
                 )
               }
             },
@@ -260,19 +266,20 @@ class AdvMock extends Component {
   };
 
   handelDelCron = (e, text, record) => {
-    let projectId = this.props.match.params.id;
-    let socket_id = this.props.match.params.actionId;
     e.preventDefault();
+    let projectId = this.props.match.params.id;
     axios.post('/api/cron/del', {id: record._id, project_id: projectId})
     .then(res => {
       message.success('删除成功');
-      this.props.getCronList(socket_id, 1 , 10)
-      .then(() => {
-        const data = Object.assign({}, this.state.pagination,  { total: this.props.data.total })
-        this.setState({
-          pagination: data
+      if(record.push_switch_status) {
+        this.handelCancelPushMock(record);
+        this.handleUpdate(record._id, {
+          status: 0,
+          push_switch_status: false
         })
-      });
+        return false
+      }
+      this.updateList()
     })
     .catch(err => {
       console.log(err)
@@ -283,11 +290,31 @@ class AdvMock extends Component {
   }
 
   handlePushSwitch = (checked, record) => {
+    let status = checked ? 1 : 0;
     if(checked) {
-      this.handelPushMock(record);
+      this.handelPushMock(record)
+      .then(res => {
+        status = !!res ? 1 : -1;
+      })
     } else {
-      this.handelCancelPushMock(record);
+      this.handelCancelPushMock(record)
     }
+    this.handleUpdate(record._id, {
+      status,
+      push_switch_status: checked
+    })
+  }
+
+  updatePushSwitchStatus = (id, push_switch_status) => {
+    let project_id = this.props.match.params.id;
+    axios.post('/api/cron/up', {
+      id,
+      project_id,
+      push_switch_status
+    }).then(() => {
+    }).catch(err =>{
+      console.log(err);
+    })
   }
 
   updateStatus = (id, status) => {
@@ -303,6 +330,19 @@ class AdvMock extends Component {
     })
   };
 
+  handleUpdate = (id, data) => {
+    let project_id = this.props.match.params.id;
+    const params = {
+      id,
+      project_id,
+      ...data
+    }
+    this.props.updateCron(params)
+    .then(() => {
+      this.updateList()
+    })
+  };
+
   handelPushMock = (record) => {
     let socket_id = this.props.match.params.actionId;
     const {minute, times, stock_codes, _id} = record;
@@ -313,28 +353,28 @@ class AdvMock extends Component {
       stock_codes,
       cron_id: _id
     }
-    axios.post('/api/mock/push', params)
-    .then(res => {
-      if(res.data.data.success) {
-        message.success('正在开始推送...');
-        this.updateStatus(record._id, 1);
-      } else {
-        message.error('推送失败');
-        this.updateStatus(record._id, -1);
-      }
+    return new Promise(resolve => {
+      axios.post('/api/mock/push', params)
+      .then(res => {
+        if(res.data.data.success) {
+          message.success('正在开始推送...');
+        } else {
+          message.error('推送失败');
+        }
+        resolve(res.data.data.success)
+      })
+      .catch(err => {
+        console.log(err);
+      }) 
     })
-    .catch(err => {
-      console.log(err);
-    }) 
   }
 
   handelCancelPushMock = (record) => {
-    axios.post('/api/mock/cancel_push', {
+    return axios.post('/api/mock/cancel_push', {
       cron_id: record._id
     })
     .then(res => {
       message.success(`${record.name}推送任务已关闭`);
-      this.updateStatus(record._id, 0);
     })
     .catch(err => {
       console.log(err);

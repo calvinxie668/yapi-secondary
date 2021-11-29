@@ -3,6 +3,7 @@ const yapi = require('../yapi.js');
 const cronModel = require('../models/cron.js');
 const projectModel = require('../models/project.js');
 const socketModel = require('../models/socket.js');
+const userModel = require('../models/user.js');
 
 class cronController extends baseController {
     constructor(ctx) {
@@ -10,6 +11,7 @@ class cronController extends baseController {
         this.Model = yapi.getInst(cronModel);
         this.projectModel = yapi.getInst(projectModel);
         this.socketModel = yapi.getInst(socketModel);
+        this.userModel = yapi.getInst(userModel);
     }
 
     async add(ctx) {
@@ -71,9 +73,16 @@ class cronController extends baseController {
         if(!page || !limit) {
             return (ctx.body = yapi.commons.resReturn(null, 400, '参数错误'));
         }
-        
-        const result = await Promise.all([this.Model.listCount(),  this.Model.listWithPage(socket_id, page, limit)])
-
+        let result = await Promise.all([this.Model.listCount(),  this.Model.listWithPage(socket_id, page, limit)])
+        //深拷贝对象来修改属性
+        result[1] = JSON.parse(JSON.stringify(result[1]))
+        for(let i = 0; i < result[1].length; i++) {
+            let item = result[1][i]
+            if(item.uid) {
+                const userinfo  = await this.userModel.findById(item.uid)
+                result[1][i].username = userinfo.username
+            }
+        }
         ctx.body = yapi.commons.resReturn({
             total: result[0],
             list: result[1]

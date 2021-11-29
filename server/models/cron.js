@@ -14,6 +14,7 @@ class cronModel extends baseModel {
         catid: { type: Number, required: true },
         name: { type: String, require: true },
         status: String,
+        push_switch_status: {type: Boolean, default: false},
         times: Number,
         minute: Number,
         stock_codes: String,
