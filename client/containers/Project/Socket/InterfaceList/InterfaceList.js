@@ -143,6 +143,7 @@ class InterfaceList extends Component {
 
   handleAddInterface = data => {
     data.project_id = this.props.curProject._id;
+    data.path = data.method == 'PULL' ? data.req_msg_type : data.push_msg_type;
     axios.post('/api/socket/add', data).then(res => {
       if (res.data.errcode !== 0) {
         return message.error(`${res.data.errmsg}, 你可以在左侧的接口列表中对接口进行删改`);

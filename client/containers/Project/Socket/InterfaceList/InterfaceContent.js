@@ -7,7 +7,8 @@ import View from './View.js';
 import { Prompt } from 'react-router';
 import { fetchSocketData } from '../../../../reducer/modules/interface.js';
 import { withRouter } from 'react-router-dom';
-import Run from './Run/Run.js';
+// import Run from './Run/Run.js';
+import Push from './Push.js';
 const plugin = require('client/plugin.js');
 
 const TabPane = Tabs.TabPane;
@@ -106,6 +107,9 @@ class Content extends Component {
     });
   };
   render() {
+    const that = this;
+    const { method } = this.props.curdata;
+    const isShowCron = !!(that.props.match.url.indexOf('socket') > -1) && method === 'PUSH'
     if (this.props.curdata.title) {
       document.getElementsByTagName('title')[0].innerText =
         this.props.curdata.title + '-' + this.title;
@@ -125,7 +129,12 @@ class Content extends Component {
       //   name: '运行'
       // }
     };
-
+    if(isShowCron) {
+      InterfaceTabs = Object.assign({}, ...InterfaceTabs, ...{push: {
+        component: Push,
+        name: '推送'
+      }})
+    }
     plugin.emitHook('interface_tab', InterfaceTabs);
 
     const tabs = (

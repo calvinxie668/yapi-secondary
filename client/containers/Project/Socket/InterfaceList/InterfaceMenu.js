@@ -147,6 +147,7 @@ class InterfaceMenu extends Component {
 
   handleAddInterface = (data, cb) => {
     data.project_id = this.props.projectId;
+    data.path = data.method == 'PULL' ? data.req_msg_type : data.push_msg_type;
     axios.post('/api/socket/add', data).then(res => {
       if (res.data.errcode !== 0) {
         return message.error(res.data.errmsg);
@@ -255,7 +256,7 @@ class InterfaceMenu extends Component {
       draftData.path = draftData.path + '_' + Date.now();
     });
 
-    axios.post('/api/interface/add', newData).then(async res => {
+    axios.post('/api/socket/add', newData).then(async res => {
       if (res.data.errcode !== 0) {
         return message.error(res.data.errmsg);
       }

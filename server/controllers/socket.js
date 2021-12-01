@@ -202,7 +202,7 @@ class socketController extends baseController {
     params.method = params.method.toUpperCase();
     params.req_params = params.req_params || [];
     params.res_body_type = params.res_body_type ? params.res_body_type.toLowerCase() : 'json';
-    params.path = params.method === 'PULL' ? params.req_msg_type : params.push_msg_type;
+    // params.path = params.method === 'PULL' ? params.req_msg_type : params.push_msg_type;
       
       let checkRepeat = await this.Model.checkRepeat(params.project_id, params.path, params.method);
 
@@ -213,11 +213,22 @@ class socketController extends baseController {
           '已存在的接口:' + params.path + '[' + params.method + ']'
         ));
       }
+      if(params._id) {
+        delete params._id
+      }
       let data = Object.assign(params, {
         uid: this.getUid(),
         add_time: yapi.commons.time(),
         up_time: yapi.commons.time()
       })
+      if (this.getRole() !== 'admin' && uid !== 999999) {
+        let userdata = await yapi.commons.getUserdata(uid, 'dev');
+        // 检查一下是否有这个人
+        let check = await this.projectModel.checkMemberRepeat(params.project_id, uid);
+        if (check === 0 && userdata) {
+          await this.projectModel.addMember(params.project_id, [userdata]);
+        }
+      }
       let result = await this.Model.save(data);
       this.catModel.get(params.catid).then(cate => {
         let username = this.getUsername();

@@ -104,7 +104,7 @@ class socketMockController extends baseController {
         if(is_mock_open && !!mock_script) {
           await yapi.commons.handleMockScript(mock_script, context);
         }
-        const result = {
+        let result = {
           success: true,
           msg: '成功',
           code: context.httpCode,
@@ -112,6 +112,14 @@ class socketMockController extends baseController {
           rspClass: socket_list.res_msg_body,
           rspMsgType: socket_list.res_msg_type
         }
+        if(context.mockJson && context.mockJson.payload) {
+          result = Object.assign({}, result, {content: context.mockJson.payload})
+          if(context.mockJson.responseCode != '' || context.mockJson.responseCode != undefined) {
+            result = Object.assign({}, result, {responseCode: context.mockJson.responseCode, responseMsg: context.mockJson.responseMsg || ''})
+          } else {
+           result = Object.assign({}, result, {responseCode: -1, responseMsg: context.mockJson.responseMsg || ''})
+          }
+        } 
         return ctx.body = result;
       } catch (e) {
         yapi.commons.log(e, 'error');
@@ -190,7 +198,7 @@ class socketMockController extends baseController {
         if(is_mock_open && !!mock_script) {
           await yapi.commons.handleMockScript(mock_script, context);
         }
-        // console.log(context.mockJson);
+        console.log(context.mockJson);
         // const content = JSON.stringify(context.mockJson.data);
         // console.log(context.mockJson.data)
         let step =  times && minute && Math.ceil(minute*60/times) > 1 ? Math.ceil(minute*60/times) : 1;

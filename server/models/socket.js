@@ -2,9 +2,6 @@ const baseModel = require('./base.js');
 const yapi = require('../yapi.js');
 
 class socketModel extends baseModel {
-    constructor () {
-        super()
-    }
     getName () {
         return 'socket';
     }
