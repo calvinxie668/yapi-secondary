@@ -667,6 +667,21 @@ let routerConfig = {
       action: 'updateMock',
       path: 'manager/update',
       method: 'get'
+    },
+    {
+      action: 'getOncePushList',
+      path: 'once_push_list',
+      method: 'get'
+    },
+    {
+      action: 'upOncePush',
+      path: 'up_once_push',
+      method: 'post'
+    },
+    {
+      action: 'openOncePush',
+      path: 'push_once',
+      method: 'post'
     }
   ],
   cron: [

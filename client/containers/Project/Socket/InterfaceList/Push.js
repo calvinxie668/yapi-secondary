@@ -40,7 +40,7 @@ class socketPush  extends Component {
             },
             type: 'add',
             cronId: null,
-            
+            content: {},
             columns: [
                 {
                   title: '任务名称',
@@ -397,6 +397,29 @@ class socketPush  extends Component {
         this.showModal('edit', record)
       }
 
+      getOncePushData = (socket_id) => {
+        axios.get('/api/mock/once_push_list', {
+            params: {
+                socket_id
+            }
+        })
+        .then(res => {
+            if(res.data.data != null) {
+                const data = res.data.data;
+                this.setState({
+                    content:  data.content
+                })
+                this.props.form.setFieldsValue({
+                    stock_codes_single: data.stock_codes_single,
+                    content: data.content
+                })
+            }
+        })
+        .catch(err => {
+            console.log(err);    
+        })
+      };
+
     componentWillMount () {
         let interfaceId = this.props.match.params.actionId;
         this.props.getCronList(interfaceId, 1 , this.state.pagination.pageSize)
@@ -406,6 +429,9 @@ class socketPush  extends Component {
                 pagination: data
             })
         });
+        if(this.state.tab === 'single') {
+            this.getOncePushData(interfaceId)
+        }
     };
     handleChangeTab = (e) => {
         this.setState({
@@ -414,10 +440,10 @@ class socketPush  extends Component {
     }
     handleSaveSinglePush = (e) => {
         e.preventDefault();
+        let interfaceId = this.props.match.params.actionId;
         this.props.form.validateFields(['stock_codes_single', 'content'], (err, values) => {
             if(!err) {
-                const url = '';
-                axios.post(url, values)
+                axios.post('/api/mock/up_once_push', {stock_codes_single: values.stock_codes_single, socket_id: interfaceId, content: this.state.content})
                 .then(res => {
                     if(res.data.success) {
                         message.success('保存成功')
@@ -432,15 +458,30 @@ class socketPush  extends Component {
 
     handleSubmitSinglePush = (e) => {
         e.preventDefault();
+        let interfaceId = this.props.match.params.actionId;
         this.props.form.validateFieldsAndScroll(['stock_codes_single', 'content'], (err, values) => {
             if(!err) {
                 console.log(values)
+                axios.post('/api/mock/push_once', {
+                    socket_id: interfaceId,
+                    stock_codes_single: values.stock_codes_single,
+                    content: this.state.content
+                })
+                .then(res => {
+                    if(res.data.data.success) {
+                        message.success(res.data.data.msg);
+                        return  
+                    }
+                    message.error(res.data.data.msg);
+                })
+                .catch(err => {})
             }
         });
     }
 
     render() {
         const { getFieldDecorator } = this.props.form;
+        const aceContent = this.state.content;
         const formItemLayout = {
           labelCol: {
             sm: { span: 4 }
@@ -491,7 +532,11 @@ class socketPush  extends Component {
                                 required: true,
                                 message: '推送内容不能为空'
                             }]
-                        })(<AceEditor data={null}  style={{ minHeight: 600 }} />)
+                        })(<AceEditor data={aceContent} mode="javascript" style={{ minHeight: 600 }} onChange={(d) => {
+                            this.setState({
+                                content: d.text
+                            })
+                        }} />)
                         }
                     </FormItem>
                     <FormItem {...tailFormItemLayout}>

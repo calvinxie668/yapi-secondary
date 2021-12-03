@@ -1,6 +1,6 @@
 const yapi = require('../yapi.js');
 const baseController = require('./base.js');
-const socketMockModel = require('../models/socketMock.js');
+const socketOncePushModel = require('../models/socketOncePush.js');
 const socketModel = require('../models/socket.js');
 const cronModel = require('../models/cron.js');
 const mockExtra = require('../../common/mock-extra.js');
@@ -33,7 +33,7 @@ const cancelCron = async (id) => {
 class socketMockController extends baseController {
   constructor(ctx) {
     super(ctx);
-    this.Model = yapi.getInst(socketMockModel);
+    this.Model = yapi.getInst(socketOncePushModel);
     this.socketModel = yapi.getInst(socketModel);
     this.advModel = yapi.getInst(advModel);
     this.cronModel = yapi.getInst(cronModel)
@@ -133,7 +133,11 @@ class socketMockController extends baseController {
       return ctx.body = yapi.commons.resReturn(null, 402, e.message);
     }
   }
-
+  /**
+   * 定时推送
+   * @param {*} ctx 
+   * @returns 
+   */
   async openMockPush(ctx) {
     const { socket_id, minute, times, stock_codes, cron_id } = ctx.params;
     if(!socket_id) {
@@ -266,7 +270,11 @@ class socketMockController extends baseController {
       return ctx.body = yapi.commons.resReturn(null, 402, e.message);
     }
   }
-
+ /**
+  * 取消推送
+  * @param {*} ctx 
+  * @returns 
+  */
   async cancelMockPush(ctx) {
     let cron_id = ctx.params.cron_id;
     if(!cron_id) {
@@ -279,7 +287,11 @@ class socketMockController extends baseController {
       console.log('=======shcjobs end=========')
     ctx.body = yapi.commons.resReturn({success: true})
   }
-
+/**
+ * 更新后台mock pb类
+ * @param {*} ctx 
+ * @returns 
+ */
   async updateMock(ctx) {
     let serverName =ctx.query.serverName
     console.log(serverName)
@@ -310,6 +322,102 @@ class socketMockController extends baseController {
    } else {
      ctx.body = yapi.commons.resReturn(null, 400, '失败');
    }
+  }
+/**
+ * 获取单次推送内容
+ * @param {*} ctx 
+ * @returns 
+ */
+  async getOncePushList(ctx) {
+    let socket_id = ctx.params.socket_id;
+    if(!socket_id) {
+      return ctx.body = yapi.commons.resReturn(null, 400, 'socket_id不能为空');
+    }
+    try {
+      const result = await this.Model.listBySocketId(socket_id);
+      return (ctx.body = yapi.commons.resReturn(result));
+      
+    } catch (e) {
+      return  ctx.body = yapi.commons.resReturn(null, 402, err.message);
+    }
+  }
+  /**
+   * 更新单次推送内容
+   * @param {*} ctx 
+   * @returns 
+   */
+  async upOncePush(ctx) {
+    let { socket_id, content, stock_codes_single } = ctx.params;
+    if(!socket_id) {
+      return ctx.body = yapi.commons.resReturn(null, 400, 'socket_id不能为空');
+    }
+    const data = {
+      socket_id,
+      content,
+      stock_codes_single
+    } 
+    try {
+      let result;
+      const list = await this.Model.listBySocketId(socket_id);
+      console.log(list)
+      if(list == null) {
+        result = await this.Model.save(data);
+      } else {
+        result = await this.Model.up(socket_id, data);
+      }
+      return (ctx.body = yapi.commons.resReturn(result));
+    } catch (e) {
+      return  ctx.body = yapi.commons.resReturn(null, 402, e.message); 
+    }
+  }
+
+  async openOncePush(ctx) {
+    let { socket_id, content, stock_codes_single } = ctx.params;
+    if(!socket_id) {
+      return ctx.body = yapi.commons.resReturn(null, 400, 'socket_id不能为空');
+    }
+    if(!stock_codes_single) {
+      return ctx.body = yapi.commons.resReturn(null, 400, '股票代码不能为空');
+    }
+    let socket_list = await this.socketModel.get(socket_id);
+    const { topic_id, push_msg_type, push_msg_body } = socket_list;
+    const stock_codes = stock_codes_single.split(',');
+    function pushFunc () {
+      return new Promise(resolve=> {
+        Promise.all(stock_codes.map(code => {
+          axios.post('http://192.168.90.62:7369/mock/push',{
+            "topicId": topic_id,
+            "content": yapi.commons.json_parse(content),
+            "code": code,
+            "notifyMsgType": push_msg_type,
+            "notifyRespose": push_msg_body
+          })
+          .then(res => {
+            console.log(res.data)
+            resolve(res.data)
+          })
+          .catch(err => {
+            // console.log(err)
+            resolve({data: { code: '100'}})
+          })
+        }))
+      })
+    }
+    try {
+      const result = await pushFunc();
+      if(result && result.code === 200) {
+        ctx.body = yapi.commons.resReturn({success: true, msg: '开始推送', data: null})
+      } else {
+        ctx.body = yapi.commons.resReturn({success: false, msg: '推送失败', data: null})
+      }
+    } catch (e) {
+      yapi.commons.log(e, 'error');
+      return (ctx.body = {
+        errcode: 400,
+        errmsg: '解析出错，请检查。Error: ' + e.message,
+        data: null
+      });
+    }
   }
 }
 
