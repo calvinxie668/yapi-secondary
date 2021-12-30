@@ -614,18 +614,18 @@ class InterfaceEditForm extends Component {
       return (
         <Row key={index} className="interface-edit-item-content">
           <Col
-            span="1"
+            span={1}
             easy_drag_sort_child="true"
             className="interface-edit-item-content-col interface-edit-item-content-col-drag"
           >
             <Icon type="bars" />
           </Col>
-          <Col span="4" draggable="false" className="interface-edit-item-content-col">
+          <Col span={4} draggable="false" className="interface-edit-item-content-col">
             {getFieldDecorator('req_query[' + index + '].name', {
               initialValue: data.name
             })(<Input placeholder="参数名称" />)}
           </Col>
-          <Col span="3" className="interface-edit-item-content-col">
+          <Col span={3} className="interface-edit-item-content-col">
             {getFieldDecorator('req_query[' + index + '].required', {
               initialValue: data.required
             })(
@@ -635,17 +635,17 @@ class InterfaceEditForm extends Component {
               </Select>
             )}
           </Col>
-          <Col span="6" className="interface-edit-item-content-col">
+          <Col span={6} className="interface-edit-item-content-col">
             {getFieldDecorator('req_query[' + index + '].example', {
               initialValue: data.example
-            })(<TextArea autosize={true} placeholder="参数示例" />)}
+            })(<TextArea autoSize={true} placeholder="参数示例" />)}
           </Col>
-          <Col span="9" className="interface-edit-item-content-col">
+          <Col span={9} className="interface-edit-item-content-col">
             {getFieldDecorator('req_query[' + index + '].desc', {
               initialValue: data.desc
-            })(<TextArea autosize={true} placeholder="备注" />)}
+            })(<TextArea autoSize={true} placeholder="备注" />)}
           </Col>
-          <Col span="1" className="interface-edit-item-content-col">
+          <Col span={1} className="interface-edit-item-content-col">
             <Icon
               type="delete"
               className="interface-edit-del-icon"
@@ -660,13 +660,13 @@ class InterfaceEditForm extends Component {
       return (
         <Row key={index} className="interface-edit-item-content">
           <Col
-            span="1"
+            span={1}
             easy_drag_sort_child="true"
             className="interface-edit-item-content-col interface-edit-item-content-col-drag"
           >
             <Icon type="bars" />
           </Col>
-          <Col span="4" className="interface-edit-item-content-col">
+          <Col span={4} className="interface-edit-item-content-col">
             {getFieldDecorator('req_headers[' + index + '].name', {
               initialValue: data.name
             })(
@@ -679,22 +679,22 @@ class InterfaceEditForm extends Component {
               />
             )}
           </Col>
-          <Col span="5" className="interface-edit-item-content-col">
+          <Col span={5} className="interface-edit-item-content-col">
             {getFieldDecorator('req_headers[' + index + '].value', {
               initialValue: data.value
             })(<Input placeholder="参数值" />)}
           </Col>
-          <Col span="5" className="interface-edit-item-content-col">
+          <Col span={5} className="interface-edit-item-content-col">
             {getFieldDecorator('req_headers[' + index + '].example', {
               initialValue: data.example
-            })(<TextArea autosize={true} placeholder="参数示例" />)}
+            })(<TextArea autoSize={true} placeholder="参数示例" />)}
           </Col>
-          <Col span="8" className="interface-edit-item-content-col">
+          <Col span={8} className="interface-edit-item-content-col">
             {getFieldDecorator('req_headers[' + index + '].desc', {
               initialValue: data.desc
-            })(<TextArea autosize={true} placeholder="备注" />)}
+            })(<TextArea autoSize={true} placeholder="备注" />)}
           </Col>
-          <Col span="1" className="interface-edit-item-content-col">
+          <Col span={1} className="interface-edit-item-content-col">
             <Icon
               type="delete"
               className="interface-edit-del-icon"
@@ -709,18 +709,18 @@ class InterfaceEditForm extends Component {
       return (
         <Row key={index} className="interface-edit-item-content">
           <Col
-            span="1"
+            span={1}
             easy_drag_sort_child="true"
             className="interface-edit-item-content-col interface-edit-item-content-col-drag"
           >
             <Icon type="bars" />
           </Col>
-          <Col span="4" className="interface-edit-item-content-col">
+          <Col span={4} className="interface-edit-item-content-col">
             {getFieldDecorator('req_body_form[' + index + '].name', {
               initialValue: data.name
             })(<Input placeholder="name" />)}
           </Col>
-          <Col span="3" className="interface-edit-item-content-col">
+          <Col span={3} className="interface-edit-item-content-col">
             {getFieldDecorator('req_body_form[' + index + '].type', {
               initialValue: data.type
             })(
@@ -730,7 +730,7 @@ class InterfaceEditForm extends Component {
               </Select>
             )}
           </Col>
-          <Col span="3" className="interface-edit-item-content-col">
+          <Col span={3} className="interface-edit-item-content-col">
             {getFieldDecorator('req_body_form[' + index + '].required', {
               initialValue: data.required
             })(
@@ -740,17 +740,17 @@ class InterfaceEditForm extends Component {
               </Select>
             )}
           </Col>
-          <Col span="5" className="interface-edit-item-content-col">
+          <Col span={5} className="interface-edit-item-content-col">
             {getFieldDecorator('req_body_form[' + index + '].example', {
               initialValue: data.example
-            })(<TextArea autosize={true} placeholder="参数示例" />)}
+            })(<TextArea autoSize={true} placeholder="参数示例" />)}
           </Col>
-          <Col span="7" className="interface-edit-item-content-col">
+          <Col span={7} className="interface-edit-item-content-col">
             {getFieldDecorator('req_body_form[' + index + '].desc', {
               initialValue: data.desc
-            })(<TextArea autosize={true} placeholder="备注" />)}
+            })(<TextArea autoSize={true} placeholder="备注" />)}
           </Col>
-          <Col span="1" className="interface-edit-item-content-col">
+          <Col span={1} className="interface-edit-item-content-col">
             <Icon
               type="delete"
               className="interface-edit-del-icon"
@@ -764,20 +764,20 @@ class InterfaceEditForm extends Component {
     const paramsTpl = (data, index) => {
       return (
         <Row key={index} className="interface-edit-item-content">
-          <Col span="6" className="interface-edit-item-content-col">
+          <Col span={6} className="interface-edit-item-content-col">
             {getFieldDecorator('req_params[' + index + '].name', {
               initialValue: data.name
             })(<Input disabled placeholder="参数名称" />)}
           </Col>
-          <Col span="7" className="interface-edit-item-content-col">
+          <Col span={7} className="interface-edit-item-content-col">
             {getFieldDecorator('req_params[' + index + '].example', {
               initialValue: data.example
-            })(<TextArea autosize={true} placeholder="参数示例" />)}
+            })(<TextArea autoSize={true} placeholder="参数示例" />)}
           </Col>
-          <Col span="11" className="interface-edit-item-content-col">
+          <Col span={11} className="interface-edit-item-content-col">
             {getFieldDecorator('req_params[' + index + '].desc', {
               initialValue: data.desc
-            })(<TextArea autosize={true} placeholder="备注" />)}
+            })(<TextArea autoSize={true} placeholder="备注" />)}
           </Col>
         </Row>
       );
@@ -816,7 +816,7 @@ class InterfaceEditForm extends Component {
           <div>
             <TextArea
               placeholder="每行一个name:examples"
-              autosize={{ minRows: 6, maxRows: 10 }}
+              autoSize={{ minRows: 6, maxRows: 10 }}
               value={this.state.bulkValue}
               onChange={this.handleBulkValueInput}
             />
@@ -1049,7 +1049,7 @@ class InterfaceEditForm extends Component {
                 >
                   <Col style={{ minHeight: '50px' }}>
                     <Row type="flex" justify="space-around">
-                      <Col span="12" className="interface-edit-item">
+                      <Col span={12} className="interface-edit-item">
                         <Button
                           size="small"
                           type="primary"
@@ -1058,7 +1058,7 @@ class InterfaceEditForm extends Component {
                           添加form参数
                         </Button>
                       </Col>
-                      <Col span="12">
+                      <Col span={12}>
                         <div className="bulk-import" onClick={() => this.showBulk('req_body_form')}>
                           批量添加
                         </div>
@@ -1146,7 +1146,7 @@ class InterfaceEditForm extends Component {
                 <Col className="interface-edit-item-other-body">
                   {getFieldDecorator('req_body_other', {
                     initialValue: this.state.req_body_other
-                  })(<TextArea placeholder="" autosize={true} />)}
+                  })(<TextArea placeholder="" autoSize={true} />)}
                 </Col>
               </Row>
             ) : null}
@@ -1156,7 +1156,7 @@ class InterfaceEditForm extends Component {
                 <Col>
                   {getFieldDecorator('req_body_other', {
                     initialValue: this.state.req_body_other
-                  })(<TextArea placeholder="" autosize={{ minRows: 8 }} />)}
+                  })(<TextArea placeholder="" autoSize={{ minRows: 8 }} />)}
                 </Col>
               </Row>
             ) : null}

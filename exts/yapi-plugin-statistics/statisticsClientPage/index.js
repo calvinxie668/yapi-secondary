@@ -13,7 +13,7 @@ import StatisChart from './StatisChart';
 import StatisTable from './StatisTable';
 
 const CountOverview = props => (
-  <Row type="flex" justify="space-start" className="m-row">
+  <Row type="flex" justify="start" className="m-row">
     <Col className="gutter-row" span={6}>
       <span>
         分组总数
@@ -60,7 +60,7 @@ CountOverview.propTypes = {
 };
 
 const StatusOverview = props => (
-  <Row type="flex" justify="space-start" className="m-row">
+  <Row type="flex" justify="start" className="m-row">
     <Col className="gutter-row" span={6}>
       <span>
         操作系统类型
@@ -140,7 +140,7 @@ class statisticsPage extends Component {
     };
   }
 
-  async componentWillMount() {
+  async UNSAFE_componentWillMount() {
     this.props.setBreadcrumb([{ name: '系统信息' }]);
     this.getStatisData();
     this.getSystemStatusData();

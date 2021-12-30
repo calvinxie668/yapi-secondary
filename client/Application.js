@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Route, BrowserRouter as Router } from 'react-router-dom';
-import { Home, Group, Project, Follows, AddProject, Login } from './containers/index';
+import { Home, Group, Project, Follows, AddProject, Login, Capture, Service, Content } from './containers/index';
 import { Alert } from 'antd';
 import User from './containers/User/User.js';
 import Header from './components/Header/Header';
@@ -13,6 +13,7 @@ import MyPopConfirm from './components/MyPopConfirm/MyPopConfirm';
 import { checkLoginState } from './reducer/modules/user';
 import { requireAuthentication } from './components/AuthenticatedComponent';
 import Notify from './components/Notify/Notify';
+import { renderRoutes } from './common.js' 
 
 const plugin = require('client/plugin.js');
 
@@ -61,8 +62,32 @@ let AppRoute = {
   login: {
     path: '/login',
     component: Login
+  },
+  capture: {
+    path: '/capture',
+    component: Capture,
+    children: [{
+      path: '/capture/service',
+      component: Service
+    },{
+      path: '/capture/content',
+      component: Content
+    }]
   }
 };
+// let AppRoute = [
+//   {
+//     path: '/capture',
+//     component: Capture,
+//     children: [{
+//       path: '/capture/service',
+//       component: Service
+//     },{
+//       path: '/capture/content',
+//       component: Content
+//     }]
+//   }
+// ]
 // 增加路由钩子
 plugin.emitHook('app_route', AppRoute);
 
@@ -123,11 +148,13 @@ export default class App extends Component {
                   ) : key === 'home' ? (
                     <Route key={key} exact path={item.path} component={item.component} />
                   ) : (
-                    <Route
-                      key={key}
-                      path={item.path}
-                      component={requireAuthentication(item.component)}
-                    />
+                    
+                    // <Route
+                    //   key={key}
+                    //   path={item.path}
+                    //   component={requireAuthentication(item.component)}
+                    // />
+                      renderRoutes([item])
                   );
                 })}
               </div>
@@ -142,7 +169,7 @@ export default class App extends Component {
                 {/* <Route path="/statistic" component={statisticsPage} /> */}
               {/* </div> */}
             </div>
-            <Footer />
+            {/* <Footer /> */}
           </div>
         </Router>
       );

@@ -3,6 +3,9 @@ const constants = require('./constants/variable');
 const Mock = require('mockjs');
 const json5 = require('json5');
 const MockExtra = require('common/mock-extra.js');
+import React from 'react';
+import { Route } from "react-router-dom";
+import { requireAuthentication } from './components/AuthenticatedComponent';
 
 const Roles = {
   0: 'admin',
@@ -236,3 +239,17 @@ exports.arrayChangeIndex = (arr, start, end) => {
 
   return changes;
 };
+
+export const renderRoutes = (routerConfig) =>
+    // 将需要用到的属性component,children解构出来,其他直接根据配置渲染到 Route 上
+        (routerConfig || []).map(({ component: Component, children, path, ...routeProps }) => {
+          /* render() 是component={} 的替代写法,
+          * 这里使用render进行渲染是为了将 当前路由的子路由 children 绑定到 routes 属性,
+          * 这样子元素的props终究会出现 routes,也就是当前组建的子路由,再合适的位置进行`渲染`就可以了
+          */
+          let Item = requireAuthentication(Component)
+         return <Route {...routeProps} key={path} path={path}
+              render={(props) => <Item {...props} routes={children} />} />
+
+        }
+      )

@@ -80,12 +80,12 @@ class Profile extends Component {
     };
   }
 
-  componentDidMount() {
+  UNSAFE_componentDidMount() {
     this._uid = this.props.match.params.uid;
     this.handleUserinfo(this.props);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (!nextProps.match.params.uid) {
       return;
     }

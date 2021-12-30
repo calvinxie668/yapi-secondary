@@ -168,7 +168,7 @@ class InterfaceColContent extends Component {
     this.handleColdata(this.props.currCaseList);
   }
 
-  async componentWillMount() {
+  async UNSAFE_componentWillMount() {
     const result = await this.props.fetchInterfaceColList(this.props.match.params.id);
     await this.props.getToken(this.props.match.params.id);
     let { currColId } = this.props;

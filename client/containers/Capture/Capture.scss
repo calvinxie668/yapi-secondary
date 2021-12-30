@@ -1,0 +1,25 @@
+
+.warpper {
+    width: 100%;
+    height: 100%;
+    margin: .24rem auto;
+    display: flex;
+}
+.capture-main {
+   width: 100%;
+  padding: .24rem !important;
+  margin-left: .2rem;
+  margin-right: .24rem;
+  background-color: #fff;
+}
+.table-custom {
+    width: 100%;
+}
+.header-custom {
+    background: #333;
+}
+.row-custom {
+    &:hover{
+        background: #f0fbff;
+    }
+}

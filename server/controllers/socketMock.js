@@ -406,7 +406,7 @@ class socketMockController extends baseController {
     try {
       const result = await pushFunc();
       if(result && result.code === 200) {
-        ctx.body = yapi.commons.resReturn({success: true, msg: '开始推送', data: null})
+        ctx.body = yapi.commons.resReturn({success: true, msg: '推送成功', data: null})
       } else {
         ctx.body = yapi.commons.resReturn({success: false, msg: '推送失败', data: null})
       }

@@ -271,7 +271,7 @@ export default class Run extends Component {
     );
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this._crossRequestInterval = initCrossRequest(hasPlugin => {
       this.setState({
         hasPlugin: hasPlugin
@@ -284,7 +284,7 @@ export default class Run extends Component {
     clearInterval(this._crossRequestInterval);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.checkInterfaceData(nextProps.data) && this.checkInterfaceData(this.props.data)) {
       if (nextProps.data._id !== this.props.data._id) {
         this.initState(nextProps.data);
@@ -1011,7 +1011,7 @@ export default class Run extends Component {
               </h3>
               <p style={{ margin: '10px' }}>注：Test 脚本只有做自动化测试才执行</p>
               <Row>
-                <Col span="18">
+                <Col span={18}>
                   <AceEditor
                     onChange={this.onOpenTest}
                     className="case-script"
@@ -1021,7 +1021,7 @@ export default class Run extends Component {
                     }}
                   />
                 </Col>
-                <Col span="6">
+                <Col span={6}>
                   <div className="insert-code">
                     {InsertCodeMap.map(item => {
                       return (

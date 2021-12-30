@@ -168,7 +168,7 @@ class InterfaceColContent extends Component {
     this.handleColdata(this.props.currCaseList);
   }
 
-  async componentWillMount() {
+  async UNSAFE_componentWillMount() {
     const result = await this.props.fetchInterfaceColList(this.props.match.params.id);
     await this.props.getToken(this.props.match.params.id);
     let { currColId } = this.props;
@@ -480,7 +480,7 @@ class InterfaceColContent extends Component {
     this.aceEditor.editor.insertCode(code);
   };
 
-  async componentWillReceiveProps(nextProps) {
+  async  UNSAFE_componentWillReceiveProps(nextProps) {
     let newColId = !isNaN(nextProps.match.params.actionId) ? +nextProps.match.params.actionId : 0;
 
     if (newColId && ((this.currColId && newColId !== this.currColId) || nextProps.isRander)) {
@@ -900,12 +900,12 @@ class InterfaceColContent extends Component {
           >
           <div className="common-setting-modal">
             <Row className="setting-item">
-              <Col className="col-item" span="4">
+              <Col className="col-item" span={4}>
                 <label>检查HttpCode:&nbsp;<Tooltip title={'检查 http code 是否为 200'}>
                   <Icon type="question-circle-o" style={{ width: '10px' }} />
                 </Tooltip></label>
               </Col>
-              <Col className="col-item"  span="18">
+              <Col className="col-item"  span={18}>
                 <Switch onChange={e=>{
                   let {commonSetting} = this.state;
                   this.setState({
@@ -919,29 +919,29 @@ class InterfaceColContent extends Component {
             </Row>
 
             <Row className="setting-item">
-              <Col className="col-item"  span="4">
+              <Col className="col-item"  span={4}>
                 <label>检查返回json:&nbsp;<Tooltip title={'检查接口返回数据字段值，比如检查 code 是不是等于 0'}>
                   <Icon type="question-circle-o" style={{ width: '10px' }} />
                 </Tooltip></label>
               </Col>
-              <Col  className="col-item" span="6">
+              <Col  className="col-item" span={6}>
                 <Input value={this.state.commonSetting.checkResponseField.name} onChange={this.changeCommonFieldSetting('name')} placeholder="字段名"  />
               </Col>
-              <Col  className="col-item" span="6">
+              <Col  className="col-item" span={6}>
                 <Input  onChange={this.changeCommonFieldSetting('value')}  value={this.state.commonSetting.checkResponseField.value}   placeholder="值"  />
               </Col>
-              <Col  className="col-item" span="6">
+              <Col  className="col-item" span={6}>
                 <Switch  onChange={this.changeCommonFieldSetting('enable')}  checked={this.state.commonSetting.checkResponseField.enable}  checkedChildren="开" unCheckedChildren="关"  />
               </Col>
             </Row>
 
             <Row className="setting-item">
-              <Col className="col-item" span="4">
+              <Col className="col-item" span={4}>
                 <label>检查返回数据结构:&nbsp;<Tooltip title={'只有 response 基于 json-schema 方式定义，该检查才会生效'}>
                   <Icon type="question-circle-o" style={{ width: '10px' }} />
                 </Tooltip></label>
               </Col>
-              <Col className="col-item"  span="18">
+              <Col className="col-item"  span={18}>
                 <Switch onChange={e=>{
                   let {commonSetting} = this.state;
                   this.setState({
@@ -955,12 +955,12 @@ class InterfaceColContent extends Component {
             </Row>
 
             <Row className="setting-item">
-              <Col className="col-item  " span="4">
+              <Col className="col-item  " span={4}>
                 <label>全局测试脚本:&nbsp;<Tooltip title={'在跑自动化测试时，优先调用全局脚本，只有全局脚本通过测试，才会开始跑case自定义的测试脚本'}>
                   <Icon type="question-circle-o" style={{ width: '10px' }} />
                 </Tooltip></label>
               </Col>
-              <Col className="col-item"  span="14">
+              <Col className="col-item"  span={14}>
                 <div><Switch onChange={e=>{
                   let {commonSetting} = this.state;
                   this.setState({
@@ -982,7 +982,7 @@ class InterfaceColContent extends Component {
                   }}
                 />
               </Col>
-              <Col span="6">
+              <Col span={6}>
                 <div className="insert-code">
                   {InsertCodeMap.map(item => {
                     return (

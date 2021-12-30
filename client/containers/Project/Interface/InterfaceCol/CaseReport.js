@@ -31,14 +31,14 @@ const CaseReport = function(props) {
             <Col className="case-report-title" span="6">
               Url
             </Col>
-            <Col span="18">{props.url}</Col>
+            <Col span={18}>{props.url}</Col>
           </Row>
           {props.query ? (
             <Row className="case-report">
               <Col className="case-report-title" span="6">
                 Query
               </Col>
-              <Col span="18">{props.query}</Col>
+              <Col span={18}>{props.query}</Col>
             </Row>
           ) : null}
 
@@ -47,7 +47,7 @@ const CaseReport = function(props) {
               <Col className="case-report-title" span="6">
                 Headers
               </Col>
-              <Col span="18">
+              <Col span={18}>
                 <pre>{headers}</pre>
               </Col>
             </Row>
@@ -58,7 +58,7 @@ const CaseReport = function(props) {
               <Col className="case-report-title" span="6">
                 Body
               </Col>
-              <Col span="18">
+              <Col span={18}>
                 <pre style={{ whiteSpace: 'pre-wrap' }}>{params}</pre>
               </Col>
             </Row>
@@ -69,7 +69,7 @@ const CaseReport = function(props) {
             <Col className="case-report-title" span="6">
               HttpCode
             </Col>
-            <Col span="18">
+            <Col span={18}>
               <pre>{httpCode}</pre>
             </Col>
           </Row>
@@ -78,7 +78,7 @@ const CaseReport = function(props) {
               <Col className="case-report-title" span="6">
                 Headers
               </Col>
-              <Col span="18">
+              <Col span={18}>
                 <pre>{res_header}</pre>
               </Col>
             </Row>
@@ -88,7 +88,7 @@ const CaseReport = function(props) {
               <Col className="case-report-title" span="6">
                 Body
               </Col>
-              <Col span="18">
+              <Col span={18}>
                 <pre>{res_body}</pre>
               </Col>
             </Row>
@@ -100,7 +100,7 @@ const CaseReport = function(props) {
               <Col className="case-report-title" span="6">
                 验证结果
               </Col>
-              <Col span="18"><pre>
+              <Col span={18}><pre>
                 {validRes}  
               </pre></Col>
             </Row>

@@ -111,6 +111,13 @@ const ToolUser = props => {
       <li className="toolbar-li item-search">
         <Srch groupList={props.groupList} />
       </li>
+      <Tooltip placement="bottom" title={'socket抓包'}>
+        <li className="toolbar-li">
+          <Link to="/capture/content">
+            <Icon className="dropdown-link" style={{ fontSize: 16 }} type="bug" />
+          </Link>
+        </li>
+      </Tooltip>
       <Popover
         overlayClassName="popover-index"
         content={<GuideBtns />}

@@ -199,6 +199,12 @@ module.exports = {
           test: /\.json$/,
           loader: 'json-loader'
         });
+        // // 配置worker-loader        
+        // baseConfig.module.preLoaders.push({
+        //   test: /\.worker\.js$/,
+        //   loader: "worker-loader",
+        //   options: { inline: "fallback" }
+        // });
 
         if (this.env == 'prd') {
           baseConfig.plugins.push(

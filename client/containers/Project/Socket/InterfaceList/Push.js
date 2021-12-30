@@ -420,7 +420,7 @@ class socketPush  extends Component {
         })
       };
 
-    componentWillMount () {
+      UNSAFE_componentWillMount () {
         let interfaceId = this.props.match.params.actionId;
         this.props.getCronList(interfaceId, 1 , this.state.pagination.pageSize)
         .then(() => {
