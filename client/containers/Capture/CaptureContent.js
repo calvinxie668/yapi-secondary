@@ -1,5 +1,5 @@
-import React, { PureComponent as Component, forwardRef, useImperativeHandle, createRef } from "react";
-import { Button, Tag, Drawer, Row, Col, Divider, Modal, Input, Form} from 'antd'; 
+import React, { PureComponent as Component, forwardRef, useImperativeHandle, createRef, Fragment } from "react";
+import { Button, Tag, Drawer, Row, Col, Divider, Modal, Input, Form, Select} from 'antd'; 
 import {Column, Table, AutoSizer} from 'react-virtualized'
 import 'react-virtualized/styles.css';
 import ReactJson from 'react-json-view'
@@ -7,11 +7,59 @@ import { formatTime } from '../../common.js';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { setWS } from '../../reducer/modules/other.js';
+import { getCaptureList } from '../../reducer/modules/capture.js';
 import RecordWorker from "worker-loader?inline!./CaptureWorker.js";
 import momnet from 'moment';
 let timer = null;
 let ws= null;
-
+// const columns = [
+//     {
+//         title: 'Application',
+//         dataIndex: 'application',
+//         render: (data, rowData) => {
+//             let color;
+//             if(rowData.type === 'pull') {
+//                 color = 'green'
+//             } else {
+//                 color = 'greeblue'
+//             }
+//             return (
+//                 <span title={rowData.id}>
+//                     <span>{rowData.id}</span>
+//                     <Tag  color={color} key={rowData.type}>
+//                         {rowData.type}
+//                     </Tag>
+//                     <span>{rowData.application}</span>
+//                 </span>
+//             )
+//         }
+//     },
+//     {
+//         title: 'Origin',
+//         dataIndex: 'origin',
+//         key:'origin',
+//     },
+//     {
+//         title: 'Path',
+//         dataIndex: 'path',
+//         key:'path',
+//     },
+//     {
+//         title: 'Start',
+//         dataIndex: 'start_time',
+//         key:'start_time',
+//     },
+//     {
+//         title: 'Duration',
+//         dataIndex: 'duration',
+//         key:'duration',
+//         width: 150,
+//         render: (data, rowData ) => {
+//             return (<span>{rowData.duration + 'ms'}</span>)  
+//         }
+        
+//     },
+// ]
 const myRecordWorker = new RecordWorker(window.URL.createObjectURL(new Blob([RecordWorker.toString()])));
 const DescriptionItem = ({ title, content }) => (
     <div
@@ -47,11 +95,16 @@ const SelectCaprtureService = forwardRef((props, ref) => {
         props.form.validateFieldsAndScroll((err, values) => {
           if (!err) {
             const { memberId } = values;
+            
             props.init(memberId);
             hideModal();
           }
         });
     };
+    const onSelect = (value) => {
+        props.onSelected(value)
+    };
+
     return (
         <Modal
         title="select capture service"
@@ -68,6 +121,26 @@ const SelectCaprtureService = forwardRef((props, ref) => {
           ]}
         >
            <Form>
+               <Form.Item label="capture services">
+                   {
+                       props.form.getFieldDecorator('service', {
+                           rules: [
+                               {
+                                   required: true,
+                                   message: 'service is requried'
+                               }
+                           ]
+                       })(
+                        <Select onSelect={onSelect}>
+                            {
+                                props.options.map(item => {
+                                   return <Select.Option value={item._id} key={item._id}>{`${item.name}-【${item.remark}】`}</Select.Option>
+                                })
+                            }
+                        </Select>
+                       )
+                   }
+               </Form.Item>
                <Form.Item label="memberId">
                {props.form.getFieldDecorator("memberId", {
                    rules: [{
@@ -94,11 +167,13 @@ const CaptureServiceForm =  Form.create()(SelectCaprtureService);
     }),
     {
       setWS,
+      getCaptureList
     }
   )
 class CaptureContent extends Component {
     static propTypes = {
         setWS: PropTypes.func,
+        getCaptureList: PropTypes.func
     };
     constructor(props) {
         super(props);
@@ -108,7 +183,9 @@ class CaptureContent extends Component {
             visible: false,
             details: {},
             lockReconnect: false,
-            modalVisible: false
+            modalVisible: false,
+            memberId: null,
+            curRowIndex: null
         }
         this.refreshing = true;
         this.recordTableRef = null;
@@ -118,11 +195,17 @@ class CaptureContent extends Component {
         this.stopRefreshTokenScrollTop = null;
         this.dataSource = [];
         this.wsStatus = null;
+        this.services = [];
+        this.wsUrlData = {}
     }
 
     init = (memberId) => {
         if(!memberId) return;
-        ws = new WebSocket(`ws://af54ac1647ddb49328a347830dce64aa-1047970568.ap-east-1.elb.amazonaws.com:6699/sandbox/hq-interface-socket-daily/module/websocket/hq-watch-push-module?memberId=${memberId}`);
+        if(JSON.stringify(this.wsUrlData) === '{}') return;
+        // ws = new WebSocket(`ws://a4edab67387824305b6b2b16ec2ce0ce-28ea69bc91b31528.elb.ap-east-1.amazonaws.com:6699/sandbox/hq-interface-push-pc-daily/module/websocket/hq-watch-push-module?memberId=${memberId}`);
+        const wsDomain = this.wsUrlData.extranet
+        const wsPath = this.wsUrlData.name
+        ws = new WebSocket(`ws://${wsDomain}:6699/sandbox/${wsPath}/module/websocket/hq-watch-push-module?memberId=${memberId}`);
         ws.onopen = (evt) => {
             console.log('open')
             this.wsStatus = evt.type;
@@ -164,11 +247,11 @@ class CaptureContent extends Component {
         });
         this.reconnectTimer && clearTimeout(this.reconnectTimer);
         this.reconnectTimer = setTimeout(() => {
-            this.init();
+            this.init(this.state.memberId);
             this.setState({
                 lockReconnect: false
-            }, parseInt(Math.random()*2000 + 3000))
-        })
+            })
+        }, parseInt(Math.random()*2000 + 3000))
     }
 // 心跳机制 30s向服务端发送一次心跳 60s超时关闭
     heartBeat = () => {
@@ -187,6 +270,16 @@ class CaptureContent extends Component {
         ws.close(); 
     }
 
+    handleClearData = () => {
+        // 一键清空数据
+        this.setState({
+            originData: []
+        })
+        myRecordWorker.postMessage(JSON.stringify({
+            type: 'clear'
+        }));
+    }
+
     transFormData = () => {
         const deep_copy_origin_data = JSON.parse(JSON.stringify(this.state.originData));
         const msg = {
@@ -197,13 +290,37 @@ class CaptureContent extends Component {
     }
 
     onRowClick = ({event, index, rowData}) => {
-        console.log(rowData)
+        this.setState({
+            curRowIndex: index
+        })
         this.stopPanelRefreshing();
         this.setState({
             details: rowData
         })
         this.showDrawer();
     }
+    handleClickRow = (event, rowData) => {
+        this.setState({
+            curRowIndex: rowData.id
+        })
+        event.preventDefault();
+        this.stopPanelRefreshing();
+        this.setState({
+            details: rowData
+        })
+        this.showDrawer();
+    }
+
+    rowStyleFormat = (row) => {
+        if(row.index < 0) return
+        if(this.state.curRowIndex === row.index) {
+           return {
+            backgroundColor: '#1890ff',
+            color: '#fff'
+           }
+        } 
+    }
+
     showDrawer = () => {
         this.setState({
             visible: true,
@@ -265,7 +382,8 @@ class CaptureContent extends Component {
     }
 
     initRecrodPanelWrapperRef = (ref) => {
-        this.recordTableRef = ref.querySelector('.ReactVirtualized__Table__Grid');
+        this.recordTableRef = ref && ref.querySelector('.ReactVirtualized__Table__Grid');
+        // this.recordTableRef = ref && ref.querySelector('.ant-table-body');
         ref && ref.addEventListener('wheel', this.onRecordScroll, { passive: true });
     }
     onRecordScroll = () => {
@@ -280,7 +398,6 @@ class CaptureContent extends Component {
           return;
        } 
        const scrollTop = this.recordTableRef.scrollTop;
-       console.log(scrollTop)
        if(scrollTop < this.lastScrollTop || this.lastScrollTop === 0) {
          this.detectIfToStopRefreshing(scrollTop);
          this.loadPrevious();
@@ -295,7 +412,7 @@ class CaptureContent extends Component {
         if (!this.stopRefreshTokenScrollTop) {
           this.stopRefreshTokenScrollTop = currentScrollTop;
         }
-
+        this.stopRefreshTimout && clearTimeout(this.stopRefreshTimout);
         this.stopRefreshTimout = setTimeout(() => {
             // if the scrollbar is scrolled up more than 50px, stop refreshing
             if ((this.stopRefreshTokenScrollTop - currentScrollTop) > 50) {
@@ -317,26 +434,58 @@ class CaptureContent extends Component {
         })
     }
 
+    initRecord = (memberId) => {
+        this.setState({
+            memberId
+        })
+        this.init(memberId)
+    }
+
+    onSelected = (value) => {
+        this.wsUrlData = this.services.filter(item => item._id === value )[0]
+    }
+
+    getOptions = async e => {
+        const data = await this.props.getCaptureList(1, 1000);
+        this.services = data.payload.data.data.list;
+    }
+
     componentDidMount() {
+        this.getOptions();
         myRecordWorker.onmessage = e => {
             const data = JSON.parse(e.data)
-            const filterRcordList = data.recordList
             switch(data.type) {
                 case 'updateData': {
                     if(data.shouldUpdateRecord) {
+                        const filterRcordList = data.recordList.reverse()
                         this.dataSource = [];
+                        let obj = null;
                         filterRcordList.forEach((item) => {
-                           const obj = {
-                               start_time: formatTime(item.request.requestTime/1000),
-                               application: 'hs-interface-socket-daily',
-                               duration: item.costTime,
-                               origin: item.origin,
-                               path: item.request.requestMsgType,
-                               type: item.type,
-                               id: item.id,
-                               request: item.request,
-                               response: item.response
-                            };
+                           if(item.type === 'pull')  {
+                               obj = {
+                                   start_time: formatTime(item.request.requestTime/1000),
+                                   application: 'hs-interface-socket-daily',
+                                   duration: item.costTime,
+                                   origin: item.origin,
+                                   path: item.request.requestMsgType,
+                                   type: item.type,
+                                   id: item.id,
+                                   request: item.request,
+                                   response: item.response
+                                };
+                           } else {
+                               obj = {
+                                    start_time: '--',
+                                    application: 'hs-interface--push-pc-daily',
+                                    origin: item.origin,
+                                    path: item.msgType,
+                                    type: item.type,
+                                    topicId: '--',
+                                    id: item.id,
+                                    notify: item.payload,
+                                    duration: '--'
+                               }
+                           }
                             this.dataSource.push(obj)
                         })
                     }
@@ -384,7 +533,7 @@ class CaptureContent extends Component {
 
     render () {
         const formRef = createRef();
-        const { type, application, start_time, duration, origin, path, request, response } = this.state.details
+        const { type, application, start_time, duration, origin, path, request, response, id: row_id, topicId, notify } = this.state.details
         const pStyle = {
             fontSize: 16,
             color: 'rgba(0,0,0,0.85)',
@@ -394,14 +543,15 @@ class CaptureContent extends Component {
         };
         let color;
         if(type === 'pull') {
-            color = 'green'
+            color = '#669900'
         } else {
-            color = 'greeblue'
+            color = '#FF9933'
         }   
         return (
             <div className="capture-main" style={{ paddingLeft: '32px', paddingRight: '32px' }}>
                 <Button type="primary" onClick={this.handleOpenMOdal} style={{marginRight: '15px'}}>Open</Button>
-                <Button type="primary" disabled={!this.props.ws} onClick={this.closeConnect}>Close</Button>
+                <Button type="primary" disabled={!this.props.ws} style={{marginRight: '15px'}} onClick={this.closeConnect}>Close</Button>
+                <Button type="primary" disabled={!this.dataSource.length} onClick={this.handleClearData}>Clear</Button>
                 <span style={{paddingRight:  '10px'}}>原始数据量: {this.state.originData.length}</span>
                 <span>table数据量: {this.dataSource.length}</span>
                 <div style={{marginTop: '15px'}} ref={this.initRecrodPanelWrapperRef}>
@@ -416,15 +566,16 @@ class CaptureContent extends Component {
                             className="table-custom"
                             rowClassName="row-custom"
                             onRowClick={this.onRowClick}
+                            rowStyle={this.rowStyleFormat}
                             rowCount={this.dataSource.length}
                             rowGetter={({index}) => this.dataSource[index]}>
                             <Column label="Application" dataKey="application"  width={120} flexGrow={1}
                                 cellRenderer={({rowData, rowIndex}) => {
                                     let color;
                                     if(rowData.type === 'pull') {
-                                        color = 'green'
+                                        color = '#669900'
                                     } else {
-                                        color = 'greeblue'
+                                        color = '#FF9933'
                                     }
                                     return (
                                         <span title={rowData.id}>
@@ -441,16 +592,26 @@ class CaptureContent extends Component {
                             <Column label="Path" dataKey="path"  width={240} flexGrow={1}></Column>
                             <Column label="Start" dataKey="start_time"  width={160}></Column>
                             <Column label="Duration" dataKey="duration"  width={120} cellRenderer={({rowData}) => {
-                              return (<span>{rowData.duration + 'ms'}</span>)   
+                              return (<span>{type === 'pull' ? rowData.duration + 'ms' : '--'}</span>)   
                             }}></Column>
                         </Table>
                     )}
                     </AutoSizer>
-                    {this.state.showNewRecordTip && <div onClick={this.resumeFresh}><span>New Records Detected.</span></div>}
+                    {/* <Table 
+                     columns={columns} 
+                     dataSource={this.dataSource} 
+                     pagination={false} 
+                     scroll={{ y: 640 }} 
+                     rowKey='id'
+                     rowClassName={this.rowStyleFormat}
+                     onRow={record => { return { onClick: e =>  this.handleClickRow(e, record)}}}
+                     >
+                    </Table> */}
+                    {this.state.showNewRecordTip && <div onClick={this.resumeFresh} className="detected"><span className="detected-name">New Records Detected.<span className="arrowDown"></span></span></div>}
                 </div>
                 {this.state.visible &&
                 <Drawer
-                    title={<span><Tag color={color} key={type}>{type}</Tag>{application}</span>}
+                    title={<span>{row_id}<Tag color={color} key={type}>{type}</Tag>{application}</span>}
                     placement="right"
                     width={760}
                     onClose={this.onClose}
@@ -472,6 +633,11 @@ class CaptureContent extends Component {
                             <DescriptionItem title="Path" content={path}/>
                         </Col>
                     </Row>           
+                    {type ==='push' && <Row>
+                        <Col span={24}>
+                            <DescriptionItem title="topicId" content={topicId}/>
+                        </Col>
+                    </Row>}           
                     <Row>
                         <Col span={24}>
                             <DescriptionItem title="Type" content={type}/>
@@ -484,11 +650,13 @@ class CaptureContent extends Component {
                     </Row>           
                     <Row>
                         <Col span={24}>
-                            <DescriptionItem title="Duration" content={duration + 'ms'}/>
+                            <DescriptionItem title="Duration" content={type === 'pull' ? duration + 'ms' : '--'}/>
                         </Col>
                     </Row>  
                     <Divider />  
-                    <p style={{ ...pStyle }}>Request</p>     
+                    {
+                        type === 'pull' ?<Fragment>
+                            <p style={{ ...pStyle }}>Request</p>     
                     <Row>
                         <Col span={24}>
                             <ReactJson src={request} />
@@ -501,13 +669,25 @@ class CaptureContent extends Component {
                             <ReactJson src={response} />
                         </Col>
                     </Row>  
+                        </Fragment> 
+                    :   <Fragment>
+                        <p style={{ ...pStyle }}>Notify</p> 
+                    <Row>
+                        <Col span={24}>
+                            <ReactJson src={notify} />
+                        </Col>
+                    </Row>
+                    </Fragment> 
+                    }
                 </Drawer>}
                 {this.state.modalVisible && 
                 <CaptureServiceForm 
                 visible={this.state.modalVisible} 
                 close={this.handleCloseModal} 
                 wrappedComponentRef={formRef} 
-                init={this.init}
+                init={this.initRecord}
+                options={this.services}
+                onSelected={this.onSelected}
                 wsStatus={this.wsStatus}>
                 </CaptureServiceForm>}
             </div>

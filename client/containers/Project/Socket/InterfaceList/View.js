@@ -443,7 +443,7 @@ class View extends Component {
                 <Icon
                   type="copy"
                   className="interface-url-icon"
-                  onClick={() => this.copyUrl(this.props.curData.req_msg_type)}
+                  onClick={() => this.copyUrl(this.props.curData.method === 'PULL' ? this.props.curData.req_msg_type : this.props.curData.push_msg_type)}
                   style={{ display: this.state.enter ? 'inline-block' : 'none' }}
                 />
               </Tooltip>

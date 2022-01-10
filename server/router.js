@@ -14,6 +14,7 @@ const projectController = require('./controllers/project.js');
 const logController = require('./controllers/log.js');
 const followController = require('./controllers/follow.js');
 const openController = require('./controllers/open.js');
+const captureController = require('./controllers/capture.js');
 const { createAction } = require('./utils/commons.js');
 
 const router = koaRouter();
@@ -66,7 +67,11 @@ let INTERFACE_CONFIG = {
   cron: {
     prefix: '/cron/',
     controller: cronController
-  } 
+  }, 
+  capture: {
+    prefix: '/capture/',
+    controller: captureController
+  }
 };
 
 let routerConfig = {
@@ -685,6 +690,28 @@ let routerConfig = {
     }
   ],
   cron: [
+    {
+      action: 'add',
+      path: 'add',
+      method: 'post'
+    },
+    {
+      action: 'list',
+      path: 'list',
+      method: 'get'
+    },
+    {
+      action: 'up',
+      path: 'up',
+      method: 'post'
+    },
+    {
+      action: 'del',
+      path: 'del',
+      method: 'post'
+    }
+  ],
+  capture: [
     {
       action: 'add',
       path: 'add',

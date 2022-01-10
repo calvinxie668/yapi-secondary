@@ -93,13 +93,19 @@ self.addEventListener('message', e => {
             break;
         }
 
+        case 'clear': {
+            recordList = [];
+            self.diffRecords();
+            break;
+        }
+
         case 'updateRefreshing': {
             if (typeof data.refreshing === 'boolean') {
               self.refreshing = data.refreshing;
               if (self.refreshing) {
                 self.diffRecords();
               } else {
-                  self.checkNewRecordsTip();
+                self.checkNewRecordsTip();
               }
             }
             break;

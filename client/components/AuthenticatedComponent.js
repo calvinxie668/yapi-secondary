@@ -90,7 +90,7 @@ export function requireAuthentication(Component) {
       }
     }
     render() {
-      return <Fragment>{this.props.isAuthenticated ? <Component {...this.props} /> : null};</Fragment>
+      return <Fragment>{this.props.isAuthenticated ? <Component {...this.props} /> : null}</Fragment>
     }
   };
 }

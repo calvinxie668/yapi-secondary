@@ -59,6 +59,7 @@ class InterfaceEdit extends Component {
 
   onSubmit = async params => {
     params.id = this.props.match.params.actionId;
+    params.path = params.method == 'PULL' ? params.req_msg_type : params.push_msg_type;
     let result = await axios.post('/api/socket/up', params);
     this.props.fetchSocketListMenu(this.props.currProject._id).then();
     this.props.fetchSocketData(params.id).then();

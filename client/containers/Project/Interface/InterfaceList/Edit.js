@@ -4,8 +4,8 @@ import { connect } from 'react-redux';
 import InterfaceEditForm from './InterfaceEditForm.js';
 import {
   updateInterfaceData,
-  fetchInterfaceListMenu,
-  fetchInterfaceData
+  fetchSocketListMenu,
+  fetchSocketData
 } from '../../../../reducer/modules/interface.js';
 import { getProject } from '../../../../reducer/modules/project.js';
 import axios from 'axios';
@@ -23,8 +23,8 @@ import ProjectTag from '../../Setting/ProjectMessage/ProjectTag.js';
   },
   {
     updateInterfaceData,
-    fetchInterfaceListMenu,
-    fetchInterfaceData,
+    fetchSocketListMenu,
+    fetchSocketData,
     getProject
   }
 )
@@ -33,8 +33,8 @@ class InterfaceEdit extends Component {
     curdata: PropTypes.object,
     currProject: PropTypes.object,
     updateInterfaceData: PropTypes.func,
-    fetchInterfaceListMenu: PropTypes.func,
-    fetchInterfaceData: PropTypes.func,
+    fetchSocketListMenu: PropTypes.func,
+    fetchSocketData: PropTypes.func,
     match: PropTypes.object,
     switchToView: PropTypes.func,
     getProject: PropTypes.func
@@ -60,8 +60,8 @@ class InterfaceEdit extends Component {
   onSubmit = async params => {
     params.id = this.props.match.params.actionId;
     let result = await axios.post('/api/interface/up', params);
-    this.props.fetchInterfaceListMenu(this.props.currProject._id).then();
-    this.props.fetchInterfaceData(params.id).then();
+    this.props.fetchSocketListMenu(this.props.currProject._id).then();
+    this.props.fetchSocketData(params.id).then();
     if (result.data.errcode === 0) {
       this.props.updateInterfaceData(params);
       message.success('保存成功');

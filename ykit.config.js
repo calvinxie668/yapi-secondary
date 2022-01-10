@@ -210,7 +210,8 @@ module.exports = {
           baseConfig.plugins.push(
             new this.webpack.optimize.UglifyJsPlugin({
               compress: {
-                warnings: false
+                warnings: false,
+                drop_console: true
               }
             })
           );

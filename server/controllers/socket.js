@@ -464,28 +464,28 @@ class socketController extends baseController {
       params
     );
 
-    if (params.path) {
-      let http_path;
-      http_path = url.parse(params.path, true);
+    // if (params.path) {
+    //   let http_path;
+    //   http_path = url.parse(params.path, true);
 
-      if (!yapi.commons.verifyPath(http_path.pathname)) {
-        return (ctx.body = yapi.commons.resReturn(
-          null,
-          400,
-          'path第一位必需为 /, 只允许由 字母数字-/_:.! 组成'
-        ));
-      }
-      params.query_path = {};
-      params.query_path.path = http_path.pathname;
-      params.query_path.params = [];
-      Object.keys(http_path.query).forEach(item => {
-        params.query_path.params.push({
-          name: item,
-          value: http_path.query[item]
-        });
-      });
-      data.query_path = params.query_path;
-    }
+    //   if (!yapi.commons.verifyPath(http_path.pathname)) {
+    //     return (ctx.body = yapi.commons.resReturn(
+    //       null,
+    //       400,
+    //       'path第一位必需为 /, 只允许由 字母数字-/_:.! 组成'
+    //     ));
+    //   }
+    //   params.query_path = {};
+    //   params.query_path.path = http_path.pathname;
+    //   params.query_path.params = [];
+    //   Object.keys(http_path.query).forEach(item => {
+    //     params.query_path.params.push({
+    //       name: item,
+    //       value: http_path.query[item]
+    //     });
+    //   });
+    //   data.query_path = params.query_path;
+    // }
 
     if (
       params.path &&

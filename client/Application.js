@@ -175,7 +175,7 @@ export default class App extends Component {
       );
     }
     return r;
-  };
+  }
 
   render() {
     return this.route(this.props.loginState);

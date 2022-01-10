@@ -10,6 +10,7 @@ import menu from './menu.js';
 import follow from './follow.js';
 import cron from './cron.js';
 import other  from './other.js';
+import capture  from './capture';
 
 import { emitHook } from 'client/plugin.js';
 
@@ -24,7 +25,8 @@ const reducerModules = {
   menu,
   follow,
   cron,
-  other
+  other,
+  capture
 };
 emitHook('add_reducer', reducerModules);
 
