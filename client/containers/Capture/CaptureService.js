@@ -255,7 +255,7 @@ class CaptureService extends Component {
                                 required: true,
                                 message: '服务名称不能为空',
                             }]
-                        })(<Input />)}
+                        })(<Input placeholder="如 hq-interface-socket-daily"/>)}
                         </Form.Item>
                         <Form.Item label="内网域名"
                           {...formItemLayout}
@@ -265,7 +265,7 @@ class CaptureService extends Component {
                                 required: true,
                                 message: '内网域名不能为空',
                             }]
-                        })(<Input />)}
+                        })(<Input placeholder="如 hq-interface-socket-daily.com"/>)}
                         </Form.Item>
                         <Form.Item label="外网域名"
                           {...formItemLayout}
@@ -275,7 +275,7 @@ class CaptureService extends Component {
                                 required: true,
                                 message: '外网域名不能为空',
                             }]
-                        })(<Input />)}
+                        })(<Input placeholder="如 af54ac1647ddb49328a347830dce64aa-1047970568.ap-east-1.elb.amazonaws.com"/>)}
                         </Form.Item>
                         <Form.Item label="服务环境"
                           {...formItemLayout}
@@ -301,7 +301,7 @@ class CaptureService extends Component {
                                 required: true,
                                 message: '备注不能为空',
                             }]
-                        })(<Input.TextArea />)}
+                        })(<Input.TextArea placeholder="描述该服务的信息"/>)}
                         </Form.Item>
                     </Form>
                 </Modal>}

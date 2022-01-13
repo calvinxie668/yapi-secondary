@@ -133,7 +133,7 @@ const SelectCaprtureService = forwardRef((props, ref) => {
                                }
                            ]
                        })(
-                        <Select onSelect={onSelect}>
+                        <Select onSelect={onSelect} placeholder="please select a service">
                             {
                                 props.options.map(item => {
                                    return <Select.Option value={item._id} key={item._id}>{`${item.name}-【${item.remark}】`}</Select.Option>
@@ -155,7 +155,7 @@ const SelectCaprtureService = forwardRef((props, ref) => {
                          return Number(value);
                        },
                    }]
-               })(<Input />)}
+               })(<Input placeholder="please enter a memberId" />)}
                </Form.Item>
            </Form>
         </Modal>
