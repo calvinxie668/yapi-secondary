@@ -1,5 +1,5 @@
 import React, { PureComponent as Component, forwardRef, useImperativeHandle, createRef, Fragment } from "react";
-import { Button, Tag, Drawer, Row, Col, Divider, Modal, Input, Form, Select} from 'antd'; 
+import { Button, Tag, Drawer, Row, Col, Divider, Modal, Input, Form, Select, Collapse, Radio } from 'antd'; 
 import {Column, Table, AutoSizer} from 'react-virtualized'
 import 'react-virtualized/styles.css';
 import ReactJson from 'react-json-view'
@@ -8,8 +8,10 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { setWS } from '../../reducer/modules/other.js';
 import { getCaptureList } from '../../reducer/modules/capture.js';
+import { getTopicIdList } from '../../reducer/modules/interface.js';
 import RecordWorker from "worker-loader?inline!./CaptureWorker.js";
 import momnet from 'moment';
+import { T } from "antd/lib/upload/utils";
 let timer = null;
 let ws= null;
 // const columns = [
@@ -117,7 +119,7 @@ const SelectCaprtureService = forwardRef((props, ref) => {
             </Button>,
             <Button key="submit" type="primary" disabled={props.wsStatus === 'open'} onClick={handleSubmit}>
               start
-            </Button>,
+            </Button>
           ]}
         >
            <Form>
@@ -163,17 +165,20 @@ const SelectCaprtureService = forwardRef((props, ref) => {
 const CaptureServiceForm =  Form.create()(SelectCaprtureService);
 @connect(
     state => ({
-      ws: state.other.ws
+      ws: state.other.ws,
+      topicIdList: state.inter.topicIdList
     }),
     {
       setWS,
-      getCaptureList
+      getCaptureList,
+      getTopicIdList
     }
   )
 class CaptureContent extends Component {
     static propTypes = {
         setWS: PropTypes.func,
-        getCaptureList: PropTypes.func
+        getCaptureList: PropTypes.func,
+        getTopicIdList: PropTypes.func
     };
     constructor(props) {
         super(props);
@@ -218,13 +223,25 @@ class CaptureContent extends Component {
             // console.log(evt)
             if(evt.data.indexOf('{') > -1) {
                 let data = Object.assign(JSON.parse(evt.data), {origin: evt.origin})
+                if(data.type.toUpperCase() === 'PUSH') {
+                    this.props.topicIdList.map(item => {
+                        if(item.push_msg_type === data.msgType) {
+                            data.topicId = item.topic_id
+                        }
+                    })
+                }
+                const msg = {
+                    type: 'updateSingle',
+                    data: data
+                };
+                myRecordWorker.postMessage(JSON.stringify(msg));
                 if(data instanceof Object) {
                     this.setState(prevState =>({
                         originData: [...prevState.originData, data]
                     }))
                 }
             }
-            this.transFormData();
+            // this.transFormData();
             this.heartBeat();
         };
         ws.onclose = (evt) => {
@@ -271,10 +288,11 @@ class CaptureContent extends Component {
     }
 
     handleClearData = () => {
-        // 一键清空数据
+        // // 一键清空数据
         this.setState({
             originData: []
         })
+        this.dataSource = []
         myRecordWorker.postMessage(JSON.stringify({
             type: 'clear'
         }));
@@ -435,6 +453,10 @@ class CaptureContent extends Component {
     }
 
     initRecord = (memberId) => {
+        if(this.state.originData.length) {
+            // 开启ws时清空列表数据
+            this.handleClearData()
+        }
         this.setState({
             memberId
         })
@@ -450,8 +472,42 @@ class CaptureContent extends Component {
         this.services = data.payload.data.data.list;
     }
 
+    handleOnSearch = (e) => {
+        e.preventDefault();
+        this.props.form.validateFields((err, values) => {
+          const msg = {
+              type: 'updateQuery',
+              filterObj: values
+          };
+        
+          myRecordWorker.postMessage(JSON.stringify(msg));
+        });
+    }
+
+    handleReset = () => {
+        this.props.form.resetFields();
+        this.props.form.validateFields((err, values) => {
+            const msg = {
+                type: 'updateQuery',
+                refreshing: false,
+                filterObj: values
+            };
+          
+            myRecordWorker.postMessage(JSON.stringify(msg));
+        });
+    }
+
+    getTopicIdList = async () => {
+        await this.props.getTopicIdList({method: 'PUSH'});
+    }
+
+    onChangeRadio = (e) => {
+
+    }
+
     componentDidMount() {
         this.getOptions();
+        this.getTopicIdList();
         myRecordWorker.onmessage = e => {
             const data = JSON.parse(e.data)
             switch(data.type) {
@@ -480,7 +536,7 @@ class CaptureContent extends Component {
                                     origin: item.origin,
                                     path: item.msgType,
                                     type: item.type,
-                                    topicId: '--',
+                                    topicId: item.topicId || '--',
                                     id: item.id,
                                     notify: item.payload,
                                     duration: '--'
@@ -533,6 +589,11 @@ class CaptureContent extends Component {
 
     render () {
         const formRef = createRef();
+        const { getFieldDecorator } = this.props.form;
+        const formItemLayout = {
+            labelCol: { span: 8 },
+            wrapperCol: { span: 16 }
+        };
         const { type, application, start_time, duration, origin, path, request, response, id: row_id, topicId, notify } = this.state.details
         const pStyle = {
             fontSize: 16,
@@ -552,8 +613,86 @@ class CaptureContent extends Component {
                 <Button type="primary" onClick={this.handleOpenMOdal} style={{marginRight: '15px'}}>Open</Button>
                 <Button type="primary" disabled={!this.props.ws} style={{marginRight: '15px'}} onClick={this.closeConnect}>Close</Button>
                 <Button type="primary" disabled={!this.dataSource.length} onClick={this.handleClearData}>Clear</Button>
-                <span style={{paddingRight:  '10px'}}>原始数据量: {this.state.originData.length}</span>
-                <span>table数据量: {this.dataSource.length}</span>
+                {/* <span style={{paddingRight:  '10px'}}>原始数据量: {this.state.originData.length}</span>
+                <span>table数据量: {this.dataSource.length}</span> */}
+                <Collapse style={{marginTop: '15px'}}>
+                    <Collapse.Panel
+                        header="Filter"
+                    >
+                        <Form onSubmit={this.handleOnSearch}>
+                            <Row>
+                                <Col span={10}>
+                                    <Form.Item label="Interface Type" {...formItemLayout}>
+                                        {
+                                            getFieldDecorator('type', {initialValue: 'all'})
+                                            (<Radio.Group onChange={this.onChangeRadio}>
+                                                <Radio value={'all'}>All</Radio>
+                                                <Radio value={'pull'}>Pull</Radio>
+                                                <Radio value={'push'}>Push</Radio>
+                                              </Radio.Group>)
+                                        }
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+                            <Row gutter={24}>
+                                <Col span={10}>
+                                    <Form.Item label="RequestMsgType/TopicId" {...formItemLayout}>
+                                        {
+                                           getFieldDecorator('requestMsgType')
+                                           (<Input placeholder="RequestMsgType/TopicId"></Input>) 
+                                        }
+                                    </Form.Item>
+                                </Col>
+                                <Col span={10}>
+                                    <Form.Item label="ResponseMsgType/msgType" {...formItemLayout}>
+                                        {
+                                           getFieldDecorator('responseMsgType')
+                                           (<Input placeholder="ResponseMsgType/msgType"></Input>) 
+                                        }
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+                            <Row gutter={24}>
+                                <Col span={8}>
+                                    <Form.Item {...formItemLayout}>
+                                        {
+                                           getFieldDecorator('key1')
+                                           (<Input placeholder="消息内容任意值可支持正则"></Input>) 
+                                        }
+                                    </Form.Item>
+                                </Col>
+                                <Col span={8}>
+                                    <Form.Item  {...formItemLayout}>
+                                        {
+                                           getFieldDecorator('key2')
+                                           (<Input placeholder="消息内容任意值可支持正则"></Input>) 
+                                        }
+                                    </Form.Item>
+                                </Col>
+                                <Col span={8}>
+                                    <Form.Item {...formItemLayout}>
+                                        {
+                                           getFieldDecorator('key3')
+                                           (<Input placeholder="消息内容任意值可支持正则"></Input>) 
+                                        }
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col span={24} style={{ textAlign: 'center' }}>
+                                    <Button type="primary" htmlType="submit">
+                                        Search
+                                        </Button>
+                                    <Button style={{ marginLeft: 8 }} onClick={this.handleReset}>
+                                        Clear
+                                    </Button>  
+                                </Col>
+                            </Row>
+                        </Form>
+
+                       
+                    </Collapse.Panel>
+                </Collapse>
                 <div style={{marginTop: '15px'}} ref={this.initRecrodPanelWrapperRef}>
                     <AutoSizer disableHeight>
                     {({ width, height }) => (
@@ -579,7 +718,7 @@ class CaptureContent extends Component {
                                     }
                                     return (
                                         <span title={rowData.id}>
-                                            <span>{rowData.id}</span>
+                                            <span style={{paddingRight: '5px'}}>{rowData.id.split('-')[2]}</span>
                                             <Tag  color={color} key={rowData.type}>
                                                 {rowData.type}
                                             </Tag>
@@ -611,7 +750,7 @@ class CaptureContent extends Component {
                 </div>
                 {this.state.visible &&
                 <Drawer
-                    title={<span>{row_id}<Tag color={color} key={type}>{type}</Tag>{application}</span>}
+                    title={<span style={{paddingRight: '5px'}}>{row_id.split('-')[2]}<Tag color={color} key={type}>{type}</Tag>{application}</span>}
                     placement="right"
                     width={760}
                     onClose={this.onClose}
@@ -682,17 +821,17 @@ class CaptureContent extends Component {
                 </Drawer>}
                 {this.state.modalVisible && 
                 <CaptureServiceForm 
-                visible={this.state.modalVisible} 
-                close={this.handleCloseModal} 
-                wrappedComponentRef={formRef} 
-                init={this.initRecord}
-                options={this.services}
-                onSelected={this.onSelected}
-                wsStatus={this.wsStatus}>
+                    visible={this.state.modalVisible} 
+                    close={this.handleCloseModal} 
+                    wrappedComponentRef={formRef} 
+                    init={this.initRecord}
+                    options={this.services}
+                    onSelected={this.onSelected}
+                    wsStatus={this.wsStatus}>
                 </CaptureServiceForm>}
             </div>
         )
     }
 }
 
-export default CaptureContent;
+export default Form.create()(CaptureContent);

@@ -692,6 +692,16 @@ class socketController extends baseController {
       ctx.body = yapi.commons.resReturn(null, 402, err.message);
     }
   }
+
+  async getTopicIdList(ctx) {
+    const params = ctx.params.method;
+    try {
+     const result =  await this.Model.topicIdList(params);
+     ctx.body = yapi.commons.resReturn(result);
+    } catch (err) {
+      ctx.body = yapi.commons.resReturn(null, 402, err.message);
+    }
+  } 
 }
 
 module.exports = socketController      

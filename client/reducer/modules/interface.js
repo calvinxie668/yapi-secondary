@@ -18,6 +18,7 @@ const FETCH_SOCKET_LIST = 'yapi/socket/FETCH_SOCKET_LIST';
 const SAVE_IMPORT_DATA = 'yapi/interface/SAVE_IMPORT_DATA';
 const FETCH_INTERFACE_CAT_LIST = 'yapi/interface/FETCH_INTERFACE_CAT_LIST';
 const FETCH_SOCKET_CAT_LIST = 'yapi/socket/FETCH_SOCKET_CAT_LIST';
+const GET_TOPICID_LIST = 'yapi/socket/GET_TOPICID_LIST'
 // const SAVE_INTERFACE_PROJECT_ID = 'yapi/interface/SAVE_INTERFACE_PROJECT_ID';
 // const GET_INTERFACE_GROUP_LIST = 'yapi/interface/GET_INTERFACE_GROUP_LIST';
 
@@ -30,7 +31,8 @@ const initialState = {
   totalTableList2: [],
   catTableList: [],
   count: 0,
-  totalCount: 0
+  totalCount: 0,
+  topicIdList: []
 };
 
 export default (state = initialState, action) => {
@@ -102,6 +104,12 @@ export default (state = initialState, action) => {
         ...state,
         catTableList: action.payload.data.data.list,
         count: action.payload.data.data.count
+      };
+    }
+    case GET_TOPICID_LIST: {
+      return {
+        ...state,
+        topicIdList: action.payload.data.data,
       };
     }
     default:
@@ -262,3 +270,14 @@ export async function fetchSocketListMenu(projectId) {
     payload: result
   };
 }
+
+export async function getTopicIdList(method) {
+  let result = await axios.get('/api/socket/getTopicIdList', {params: {
+    ...method
+  }})
+  return {
+    type: GET_TOPICID_LIST,
+    payload: result
+  };
+}
+

@@ -1,14 +1,15 @@
 import axios from 'axios';
 
 // Actions
-const GET_CAPTURE_LIST = 'yapi/cron/GET_CAPTURE_LIST';
-const DEL_CAPTURE = 'yapi/cron/DEL_CAPTURE';
-const ADD_CAPTURE = 'yapi/cron/ADD_CAPTURE';
-const UPDATE_CAPTURE = 'yapi/cron/UPDATE_CAPTURE'
+const GET_CAPTURE_LIST = 'yapi/capture/GET_CAPTURE_LIST';
+const DEL_CAPTURE = 'yapi/capture/DEL_CAPTURE';
+const ADD_CAPTURE = 'yapi/capture/ADD_CAPTURE';
+const UPDATE_CAPTURE = 'yapi/capture/UPDATE_CAPTURE'
+
 
 // Reducer
 const initialState = {
-  data: null
+  data: null,
 };
 
 export default (state = initialState, action) => {

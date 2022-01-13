@@ -651,6 +651,11 @@ let routerConfig = {
       path: 'up',
       method: 'post'
     },
+    {
+      action: 'getTopicIdList',
+      path: 'getTopicIdList',
+      method: 'get'
+    },
   ],
   socketMock: [
     {

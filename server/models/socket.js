@@ -201,7 +201,7 @@ class socketModel extends baseModel {
           .skip((page - 1) * limit)
           .limit(limit)
           .select(
-            '_id title uid path method project_id catid edit_uid api_opened status add_time up_time, index, tag'
+            '_id title uid path method project_id catid edit_uid api_opened status add_time up_time index tag'
           )
           .exec();
       }
@@ -212,6 +212,18 @@ class socketModel extends baseModel {
             req_msg_type: req_msg_type
           })
           .exec();
+      }
+/**
+ * 
+ * @param {*} method 接口类型 pull 、push
+ * @returns 
+ */
+      topicIdList (method) {
+        return this.model.find({
+          method
+        })
+        .select('topic_id push_msg_type')
+        .exec();
       }
 }
 
