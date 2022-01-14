@@ -52,9 +52,11 @@ self.resetDisplayRecordIndex = function () {
 self.calculateFilteredRecords = function (isFullyCalculate, listForThisTime = []) {
     if (isFullyCalculate) {
         self.FILTERED_RECORD_LIST = [];
+        console.log(self.filterObj.type)
         if(self.filterObj.type != 'all') {
             recordList = recordList.filter(item => item.type == self.filterObj.type);
         }
+        console.log(recordList)
         const length = recordList.length;
         // filtered out the records
         for (let i = 0; i < length; i++) {

@@ -72,6 +72,24 @@ const tipFollow = (
     <p>这里是你的专属收藏夹，便于你找到自己的项目</p>
   </div>
 );
+
+const tipCapture = (
+  <div className="title-container">
+    <h3 className="title">
+      <Icon type="bug" /> 抓包
+    </h3>
+    <p>这里是socket接口抓包工具, 便于你分析数据</p>
+  </div>
+);
+
+const tipUpService = (
+  <div className="title-container">
+    <h3 className="title">
+      <Icon type="sync" /> 更新mock服务
+    </h3>
+    <p>当mock后端服务更新PB文件时，可手动触发重启mock服务</p>
+  </div>
+);
 const tipAdd = (
   <div className="title-container">
     <h3 className="title">
@@ -111,6 +129,14 @@ const ToolUser = props => {
       <li className="toolbar-li item-search">
         <Srch groupList={props.groupList} />
       </li>
+      <Popover
+        overlayClassName="popover-index"
+        content={<GuideBtns />}
+        title={tipCapture}
+        placement="bottomRight"
+        arrowPointAtCenter
+        visible={props.studyTip === 1 && !props.study}
+      >
       <Tooltip placement="bottom" title={'socket抓包'}>
         <li className="toolbar-li">
           <Link to="/capture/content">
@@ -118,13 +144,14 @@ const ToolUser = props => {
           </Link>
         </li>
       </Tooltip>
+      </Popover>
       <Popover
         overlayClassName="popover-index"
         content={<GuideBtns />}
         title={tipFollow}
         placement="bottomRight"
         arrowPointAtCenter
-        visible={props.studyTip === 1 && !props.study}
+        visible={props.studyTip === 2 && !props.study}
       >
         <Tooltip placement="bottom" title={'我的关注'}>
           <li className="toolbar-li">
@@ -140,7 +167,7 @@ const ToolUser = props => {
         title={tipAdd}
         placement="bottomRight"
         arrowPointAtCenter
-        visible={props.studyTip === 2 && !props.study}
+        visible={props.studyTip === 3 && !props.study}
       >
         <Tooltip placement="bottom" title={'新建项目'}>
           <li className="toolbar-li">
@@ -152,11 +179,11 @@ const ToolUser = props => {
       </Popover>
       <Popover
         overlayClassName="popover-index"
-        content={<GuideBtns isLast={true} />}
+        content={<GuideBtns />}
         title={tipDoc}
         placement="bottomRight"
         arrowPointAtCenter
-        visible={props.studyTip === 3 && !props.study}
+        visible={props.studyTip === 4 && !props.study}
       >
         <Tooltip placement="bottom" title={'使用文档'}>
           <li className="toolbar-li">
@@ -166,11 +193,20 @@ const ToolUser = props => {
           </li>
         </Tooltip>
       </Popover>
+      <Popover
+        overlayClassName="popover-index"
+        content={<GuideBtns isLast={true} />}
+        title={tipUpService}
+        placement="bottomRight"
+        arrowPointAtCenter
+        visible={props.studyTip === 5 && !props.study}
+      >
       <Tooltip placement="bottom" title={'更新mock服务'}>
           <li className="toolbar-li">
               <Icon className="dropdown-link" style={{ fontSize: 16 }} type="sync" onClick={props.upServerVisible}/>
           </li>
         </Tooltip>
+      </Popover>
       
       <li className="toolbar-li">
         <Dropdown

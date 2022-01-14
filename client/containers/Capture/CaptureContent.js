@@ -339,6 +339,11 @@ class CaptureContent extends Component {
         } 
     }
 
+    noRowsRenderer = () => {
+        // 暂无数据占位图
+        return (<div style={{height: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100px' }}><div style={{textAlign: 'center'}}><svg width="64" height="41" viewBox="0 0 64 41" xmlns="http://www.w3.org/2000/svg"><g transform="translate(0 1)" fill="none" fill-rule="evenodd"><ellipse fill="#F5F5F5" cx="32" cy="33" rx="32" ry="7"></ellipse><g fill-rule="nonzero" stroke="#D9D9D9"><path d="M55 12.76L44.854 1.258C44.367.474 43.656 0 42.907 0H21.093c-.749 0-1.46.474-1.947 1.257L9 12.761V22h46v-9.24z"></path><path d="M41.613 15.931c0-1.605.994-2.93 2.227-2.931H55v18.137C55 33.26 53.68 35 52.05 35h-40.1C10.32 35 9 33.259 9 31.137V13h11.16c1.233 0 2.227 1.323 2.227 2.928v.022c0 1.605 1.005 2.901 2.237 2.901h14.752c1.232 0 2.237-1.308 2.237-2.913v-.007z" fill="#FAFAFA"></path></g></g></svg><p>no record</p></div></div>)
+    } 
+
     showDrawer = () => {
         this.setState({
             visible: true,
@@ -477,6 +482,7 @@ class CaptureContent extends Component {
         this.props.form.validateFields((err, values) => {
           const msg = {
               type: 'updateQuery',
+              refreshing: false,
               filterObj: values
           };
         
@@ -499,10 +505,6 @@ class CaptureContent extends Component {
 
     getTopicIdList = async () => {
         await this.props.getTopicIdList({method: 'PUSH'});
-    }
-
-    onChangeRadio = (e) => {
-
     }
 
     componentDidMount() {
@@ -625,7 +627,7 @@ class CaptureContent extends Component {
                                     <Form.Item label="Interface Type" {...formItemLayout}>
                                         {
                                             getFieldDecorator('type', {initialValue: 'all'})
-                                            (<Radio.Group onChange={this.onChangeRadio}>
+                                            (<Radio.Group>
                                                 <Radio value={'all'}>All</Radio>
                                                 <Radio value={'pull'}>Pull</Radio>
                                                 <Radio value={'push'}>Push</Radio>
@@ -652,25 +654,25 @@ class CaptureContent extends Component {
                                     </Form.Item>
                                 </Col>
                             </Row>
-                            <Row gutter={24}>
-                                <Col span={8}>
-                                    <Form.Item {...formItemLayout}>
+                            <Row gutter={24} type="flex" justify="start">
+                                <Col span={10}>
+                                    <Form.Item label="custom message content" {...formItemLayout}>
                                         {
                                            getFieldDecorator('key1')
                                            (<Input placeholder="消息内容任意值可支持正则"></Input>) 
                                         }
                                     </Form.Item>
                                 </Col>
-                                <Col span={8}>
-                                    <Form.Item  {...formItemLayout}>
+                                <Col span={6}>
+                                    <Form.Item>
                                         {
                                            getFieldDecorator('key2')
                                            (<Input placeholder="消息内容任意值可支持正则"></Input>) 
                                         }
                                     </Form.Item>
                                 </Col>
-                                <Col span={8}>
-                                    <Form.Item {...formItemLayout}>
+                                <Col span={6}>
+                                    <Form.Item>
                                         {
                                            getFieldDecorator('key3')
                                            (<Input placeholder="消息内容任意值可支持正则"></Input>) 
@@ -707,7 +709,8 @@ class CaptureContent extends Component {
                             onRowClick={this.onRowClick}
                             rowStyle={this.rowStyleFormat}
                             rowCount={this.dataSource.length}
-                            rowGetter={({index}) => this.dataSource[index]}>
+                            rowGetter={({index}) => this.dataSource[index]}
+                            noRowsRenderer={this.noRowsRenderer}>
                             <Column label="Application" dataKey="application"  width={120} flexGrow={1}
                                 cellRenderer={({rowData, rowIndex}) => {
                                     let color;
