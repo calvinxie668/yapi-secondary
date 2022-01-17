@@ -27,6 +27,7 @@ class captureController extends baseController {
             intranet: params.intranet,
             extranet: params.extranet,
             remark: params.remark,
+            port: params.port || 6699,//端口号默认6699
             env: params.env,
             uid: this.getUid(),
             add_time: yapi.commons.time(),

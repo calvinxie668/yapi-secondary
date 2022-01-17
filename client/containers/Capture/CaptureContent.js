@@ -1,5 +1,5 @@
 import React, { PureComponent as Component, forwardRef, useImperativeHandle, createRef, Fragment } from "react";
-import { Button, Tag, Drawer, Row, Col, Divider, Modal, Input, Form, Select, Collapse, Radio } from 'antd'; 
+import { Button, Tag, Drawer, Row, Col, Divider, Modal, Input, Form, Select, Collapse, Radio, message } from 'antd'; 
 import {Column, Table, AutoSizer} from 'react-virtualized'
 import 'react-virtualized/styles.css';
 import ReactJson from 'react-json-view'
@@ -11,7 +11,6 @@ import { getCaptureList } from '../../reducer/modules/capture.js';
 import { getTopicIdList } from '../../reducer/modules/interface.js';
 import RecordWorker from "worker-loader?inline!./CaptureWorker.js";
 import momnet from 'moment';
-import { T } from "antd/lib/upload/utils";
 let timer = null;
 let ws= null;
 // const columns = [
@@ -190,7 +189,8 @@ class CaptureContent extends Component {
             lockReconnect: false,
             modalVisible: false,
             memberId: null,
-            curRowIndex: null
+            curRowIndex: null,
+            closeDisabled: true
         }
         this.refreshing = true;
         this.recordTableRef = null;
@@ -201,21 +201,29 @@ class CaptureContent extends Component {
         this.dataSource = [];
         this.wsStatus = null;
         this.services = [];
-        this.wsUrlData = {}
+        this.wsUrlData = {};
+        this.stopWheel = false;
     }
 
     init = (memberId) => {
         if(!memberId) return;
         if(JSON.stringify(this.wsUrlData) === '{}') return;
         // ws = new WebSocket(`ws://a4edab67387824305b6b2b16ec2ce0ce-28ea69bc91b31528.elb.ap-east-1.amazonaws.com:6699/sandbox/hq-interface-push-pc-daily/module/websocket/hq-watch-push-module?memberId=${memberId}`);
-        const wsDomain = this.wsUrlData.extranet
-        const wsPath = this.wsUrlData.name
-        ws = new WebSocket(`ws://${wsDomain}:6699/sandbox/${wsPath}/module/websocket/hq-watch-push-module?memberId=${memberId}`);
+        const wsDomain = this.wsUrlData.extranet;
+        const wsPath = this.wsUrlData.name;
+        let port = 6699;
+        if(!/(\.com|\.net|.cn)$/.test(wsDomain) && this.wsUrlData.port) {
+            port = this.wsUrlData.port;
+        }
+        ws = new WebSocket(`ws://${wsDomain}:${port}/sandbox/${wsPath}/module/websocket/hq-watch-push-module?memberId=${memberId}`);
         ws.onopen = (evt) => {
             console.log('open')
             this.wsStatus = evt.type;
             console.log(evt)
             this.props.setWS(ws);
+            this.setState({
+                closeDisabled: false
+            })
             this.heartBeat();
         };
         ws.onmessage = (evt) => {
@@ -230,23 +238,27 @@ class CaptureContent extends Component {
                         }
                     })
                 }
-                const msg = {
-                    type: 'updateSingle',
-                    data: data
-                };
-                myRecordWorker.postMessage(JSON.stringify(msg));
+                // const msg = {
+                //     type: 'updateSingle',
+                //     data: data
+                // };
+                // myRecordWorker.postMessage(JSON.stringify(msg));
                 if(data instanceof Object) {
                     this.setState(prevState =>({
                         originData: [...prevState.originData, data]
                     }))
                 }
             }
-            // this.transFormData();
+            this.transFormData();
             this.heartBeat();
         };
         ws.onclose = (evt) => {
             console.log(evt)
             this.wsStatus = evt.type;
+            message.info('抓包服务已断开连接')
+            this.setState({
+                closeDisabled: true
+            })
             // this.reconnect();
             console.log('close')
         };
@@ -341,7 +353,7 @@ class CaptureContent extends Component {
 
     noRowsRenderer = () => {
         // 暂无数据占位图
-        return (<div style={{height: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100px' }}><div style={{textAlign: 'center'}}><svg width="64" height="41" viewBox="0 0 64 41" xmlns="http://www.w3.org/2000/svg"><g transform="translate(0 1)" fill="none" fill-rule="evenodd"><ellipse fill="#F5F5F5" cx="32" cy="33" rx="32" ry="7"></ellipse><g fill-rule="nonzero" stroke="#D9D9D9"><path d="M55 12.76L44.854 1.258C44.367.474 43.656 0 42.907 0H21.093c-.749 0-1.46.474-1.947 1.257L9 12.761V22h46v-9.24z"></path><path d="M41.613 15.931c0-1.605.994-2.93 2.227-2.931H55v18.137C55 33.26 53.68 35 52.05 35h-40.1C10.32 35 9 33.259 9 31.137V13h11.16c1.233 0 2.227 1.323 2.227 2.928v.022c0 1.605 1.005 2.901 2.237 2.901h14.752c1.232 0 2.237-1.308 2.237-2.913v-.007z" fill="#FAFAFA"></path></g></g></svg><p>no record</p></div></div>)
+        return (<div style={{height: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100px' }}><div style={{textAlign: 'center'}}><svg width="64" height="41" viewBox="0 0 64 41" xmlns="http://www.w3.org/2000/svg"><g transform="translate(0 1)" fill="none"><ellipse fill="#F5F5F5" cx="32" cy="33" rx="32" ry="7"></ellipse><g stroke="#D9D9D9"><path d="M55 12.76L44.854 1.258C44.367.474 43.656 0 42.907 0H21.093c-.749 0-1.46.474-1.947 1.257L9 12.761V22h46v-9.24z"></path><path d="M41.613 15.931c0-1.605.994-2.93 2.227-2.931H55v18.137C55 33.26 53.68 35 52.05 35h-40.1C10.32 35 9 33.259 9 31.137V13h11.16c1.233 0 2.227 1.323 2.227 2.928v.022c0 1.605 1.005 2.901 2.237 2.901h14.752c1.232 0 2.237-1.308 2.237-2.913v-.007z" fill="#FAFAFA"></path></g></g></svg><p>no record</p></div></div>)
     } 
 
     showDrawer = () => {
@@ -407,7 +419,7 @@ class CaptureContent extends Component {
     initRecrodPanelWrapperRef = (ref) => {
         this.recordTableRef = ref && ref.querySelector('.ReactVirtualized__Table__Grid');
         // this.recordTableRef = ref && ref.querySelector('.ant-table-body');
-        ref && ref.addEventListener('wheel', this.onRecordScroll, { passive: true });
+        !this.stopWheel && ref && ref.addEventListener('wheel', this.onRecordScroll, { passive: true });
     }
     onRecordScroll = () => {
         this.scrollHandlerTimeout && clearTimeout(this.scrollHandlerTimeout);
@@ -512,6 +524,7 @@ class CaptureContent extends Component {
         this.getTopicIdList();
         myRecordWorker.onmessage = e => {
             const data = JSON.parse(e.data)
+            this.stopWheel = true;
             switch(data.type) {
                 case 'updateData': {
                     if(data.shouldUpdateRecord) {
@@ -560,6 +573,7 @@ class CaptureContent extends Component {
                     break;
                 }
             }
+            this.stopWheel = false;
         }
         this.unListen = this.props.history.listen((location, action) => {
             let prevLocation = this.props.location;
@@ -613,7 +627,7 @@ class CaptureContent extends Component {
         return (
             <div className="capture-main" style={{ paddingLeft: '32px', paddingRight: '32px' }}>
                 <Button type="primary" onClick={this.handleOpenMOdal} style={{marginRight: '15px'}}>Open</Button>
-                <Button type="primary" disabled={!this.props.ws} style={{marginRight: '15px'}} onClick={this.closeConnect}>Close</Button>
+                <Button type="primary" disabled={this.state.closeDisabled} style={{marginRight: '15px'}} onClick={this.closeConnect}>Close</Button>
                 <Button type="primary" disabled={!this.dataSource.length} onClick={this.handleClearData}>Clear</Button>
                 {/* <span style={{paddingRight:  '10px'}}>原始数据量: {this.state.originData.length}</span>
                 <span>table数据量: {this.dataSource.length}</span> */}

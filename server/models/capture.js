@@ -13,6 +13,7 @@ class captureModel extends baseModel {
             name: String,
             intranet: { type: String, required: true },//内网域名
             extranet: { type: String, required: true },//外网域名
+            port: Number,
             env: Number,
             remark: { type: String, required: true },
             add_time: Number,

@@ -52,11 +52,9 @@ self.resetDisplayRecordIndex = function () {
 self.calculateFilteredRecords = function (isFullyCalculate, listForThisTime = []) {
     if (isFullyCalculate) {
         self.FILTERED_RECORD_LIST = [];
-        console.log(self.filterObj.type)
-        if(self.filterObj.type != 'all') {
+        if(self.filterObj.type != undefined && self.filterObj.type != 'all') {
             recordList = recordList.filter(item => item.type == self.filterObj.type);
         }
-        console.log(recordList)
         const length = recordList.length;
         // filtered out the records
         for (let i = 0; i < length; i++) {
@@ -83,6 +81,7 @@ self.calculateFilteredRecords = function (isFullyCalculate, listForThisTime = []
           if (index >= 0) {
             self.FILTERED_RECORD_LIST[index] = item;
           } else {
+            const itemStr = JSON.stringify(item);  
             if(!self.filterObj['requestMsgType'] || (item['request'] && item['request'].hasOwnProperty('requestMsgType') && item['request']['requestMsgType'] === self.filterObj['requestMsgType']) || (item && item.hasOwnProperty('topicId') && item['topicId'] === self.filterObj['requestMsgType'])) {
                 if(!self.filterObj['responseMsgType'] || (item['response'] && item['response'].hasOwnProperty('responseMsgType') && item['response']['responseMsgType'] === self.filterObj['responseMsgType']) || (item && item.hasOwnProperty('msgType') && item['msgType'] === self.filterObj['responseMsgType'])) {
                     if(!self.filterObj['key1'] || getFilterReg(self.filterObj['key1']).test(itemStr)) {
@@ -94,6 +93,7 @@ self.calculateFilteredRecords = function (isFullyCalculate, listForThisTime = []
                     }
                 } 
             }
+            self.FILTERED_RECORD_LIST.push(item);
           }
         });
     }
@@ -106,11 +106,6 @@ self.diffRecords = function () {
     self.IN_DIFF = true;
     let shouldUpdateRecord = false;
 
-    // self.FILTERED_RECORD_LIST= []
-    // for (let i = 0; i < recordList.length; i++) {
-    //     const item = recordList[i];
-    //     self.FILTERED_RECORD_LIST.push(item);
-    // }
     if(self.refreshing) {
         self.beginIndex = Math.max(self.FILTERED_RECORD_LIST.length - 1 - defaultLimit, 0);
         self.endIndex = self.FILTERED_RECORD_LIST.length - 1; 
@@ -191,7 +186,7 @@ self.addEventListener('message', e => {
 
         case 'updateQuery': {
             // if filterStr or limit changed
-               self.refreshing = data.refreshing;
+            //    self.refreshing = data.refreshing;
             // if (data.filterStr !== self.filterStr) {
               self.updateQueryTimer && clearTimeout(self.updateQueryTimer);
               self.updateQueryTimer = setTimeout(() => {

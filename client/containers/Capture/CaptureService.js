@@ -51,6 +51,15 @@ class CaptureService extends Component {
                     key: 'extranet',
                 },
                 {
+                    title: '端口号',
+                    dataIndex: 'port',
+                    width: 90,
+                    key: 'port',
+                    render: (text) => {
+                        return text ? text : 6699
+                    }
+                },
+                {
                     title: '环境',
                     dataIndex: 'env',
                     key: 'env',
@@ -173,6 +182,7 @@ class CaptureService extends Component {
                 name: data.name,
                 intranet:  data.intranet,
                 extranet: data.extranet,
+                port: data.port,
                 env: data.env,
                 remark: data.remark
             }) 
@@ -276,6 +286,11 @@ class CaptureService extends Component {
                                 message: '外网域名不能为空',
                             }]
                         })(<Input placeholder="如 af54ac1647ddb49328a347830dce64aa-1047970568.ap-east-1.elb.amazonaws.com"/>)}
+                        </Form.Item>
+                        <Form.Item label="端口"
+                          {...formItemLayout}
+                        >
+                        {getFieldDecorator("port")(<Input placeholder="默认6699,选填"/>)}
                         </Form.Item>
                         <Form.Item label="服务环境"
                           {...formItemLayout}
