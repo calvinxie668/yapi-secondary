@@ -198,11 +198,10 @@ class CaptureContent extends Component {
         this.stopRefreshTimout = null;
         this.lastScrollTop = 0;
         this.stopRefreshTokenScrollTop = null;
-        this.dataSource = [];
         this.wsStatus = null;
+        this.dataSource = [];
         this.services = [];
         this.wsUrlData = {};
-        this.stopWheel = false;
     }
 
     init = (memberId) => {
@@ -243,6 +242,7 @@ class CaptureContent extends Component {
                 //     data: data
                 // };
                 // myRecordWorker.postMessage(JSON.stringify(msg));
+                // 不在state声明无法更新视图
                 if(data instanceof Object) {
                     this.setState(prevState =>({
                         originData: [...prevState.originData, data]
@@ -304,7 +304,7 @@ class CaptureContent extends Component {
         this.setState({
             originData: []
         })
-        this.dataSource = []
+        this.dataSource = [];
         myRecordWorker.postMessage(JSON.stringify({
             type: 'clear'
         }));
@@ -419,7 +419,7 @@ class CaptureContent extends Component {
     initRecrodPanelWrapperRef = (ref) => {
         this.recordTableRef = ref && ref.querySelector('.ReactVirtualized__Table__Grid');
         // this.recordTableRef = ref && ref.querySelector('.ant-table-body');
-        !this.stopWheel && ref && ref.addEventListener('wheel', this.onRecordScroll, { passive: true });
+        ref && ref.addEventListener('wheel', this.onRecordScroll, { passive: true });
     }
     onRecordScroll = () => {
         this.scrollHandlerTimeout && clearTimeout(this.scrollHandlerTimeout);
@@ -457,7 +457,7 @@ class CaptureContent extends Component {
         }, 50);
     }
 
-    handleOpenMOdal = () => {
+    handleOpenModal = () => {
         this.setState({
             modalVisible: true
         })
@@ -499,6 +499,10 @@ class CaptureContent extends Component {
           };
         
           myRecordWorker.postMessage(JSON.stringify(msg));
+        // 主动更新因table数据变量在state外声明导致视图不更新
+          setTimeout(() => {
+            this.forceUpdate();
+          }, 1000)
         });
     }
 
@@ -524,11 +528,13 @@ class CaptureContent extends Component {
         this.getTopicIdList();
         myRecordWorker.onmessage = e => {
             const data = JSON.parse(e.data)
-            this.stopWheel = true;
             switch(data.type) {
                 case 'updateData': {
                     if(data.shouldUpdateRecord) {
-                        const filterRcordList = data.recordList.reverse()
+                        const filterRcordList = data.recordList.reverse();
+                        // this.setState({
+                        //     dataSource: []
+                        // })
                         this.dataSource = [];
                         let obj = null;
                         filterRcordList.forEach((item) => {
@@ -557,7 +563,10 @@ class CaptureContent extends Component {
                                     duration: '--'
                                }
                            }
-                            this.dataSource.push(obj)
+                            // this.setState(prevState =>({
+                            //     dataSource: [...prevState.dataSource, obj]
+                            // }))
+                            this.dataSource.push(obj);
                         })
                     }
                     break;
@@ -573,7 +582,6 @@ class CaptureContent extends Component {
                     break;
                 }
             }
-            this.stopWheel = false;
         }
         this.unListen = this.props.history.listen((location, action) => {
             let prevLocation = this.props.location;
@@ -626,7 +634,7 @@ class CaptureContent extends Component {
         }   
         return (
             <div className="capture-main" style={{ paddingLeft: '32px', paddingRight: '32px' }}>
-                <Button type="primary" onClick={this.handleOpenMOdal} style={{marginRight: '15px'}}>Open</Button>
+                <Button type="primary" onClick={this.handleOpenModal} style={{marginRight: '15px'}}>Open</Button>
                 <Button type="primary" disabled={this.state.closeDisabled} style={{marginRight: '15px'}} onClick={this.closeConnect}>Close</Button>
                 <Button type="primary" disabled={!this.dataSource.length} onClick={this.handleClearData}>Clear</Button>
                 {/* <span style={{paddingRight:  '10px'}}>原始数据量: {this.state.originData.length}</span>

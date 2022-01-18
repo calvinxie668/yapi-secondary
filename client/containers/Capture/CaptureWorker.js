@@ -52,13 +52,16 @@ self.resetDisplayRecordIndex = function () {
 self.calculateFilteredRecords = function (isFullyCalculate, listForThisTime = []) {
     if (isFullyCalculate) {
         self.FILTERED_RECORD_LIST = [];
+        let recordListbyfilter = []
         if(self.filterObj.type != undefined && self.filterObj.type != 'all') {
-            recordList = recordList.filter(item => item.type == self.filterObj.type);
+          recordListbyfilter  = recordList.filter(item => item.type == self.filterObj.type);
+        } else {
+          recordListbyfilter = recordList;
         }
-        const length = recordList.length;
+        const length = recordListbyfilter.length;
         // filtered out the records
         for (let i = 0; i < length; i++) {
-            const item = recordList[i];
+            const item = recordListbyfilter[i];
             const itemStr = JSON.stringify(item);
             if(!self.filterObj['requestMsgType'] || (item['request'] && item['request'].hasOwnProperty('requestMsgType') && item['request']['requestMsgType'] === self.filterObj['requestMsgType']) || (item && item.hasOwnProperty('topicId') && item['topicId'] === self.filterObj['requestMsgType'])) {
                 if(!self.filterObj['responseMsgType'] || (item['response'] && item['response'].hasOwnProperty('responseMsgType') && item['response']['responseMsgType'] === self.filterObj['responseMsgType']) || (item && item.hasOwnProperty('msgType') && item['msgType'] === self.filterObj['responseMsgType'])) {
@@ -93,7 +96,6 @@ self.calculateFilteredRecords = function (isFullyCalculate, listForThisTime = []
                     }
                 } 
             }
-            self.FILTERED_RECORD_LIST.push(item);
           }
         });
     }
@@ -133,7 +135,6 @@ self.diffRecords = function () {
     }
 
     self.currentStateData = newStateRecords;
-
     self.postMessage(JSON.stringify({
         type: 'updateData',
         shouldUpdateRecord,
@@ -186,7 +187,7 @@ self.addEventListener('message', e => {
 
         case 'updateQuery': {
             // if filterStr or limit changed
-            //    self.refreshing = data.refreshing;
+               self.refreshing = data.refreshing;
             // if (data.filterStr !== self.filterStr) {
               self.updateQueryTimer && clearTimeout(self.updateQueryTimer);
               self.updateQueryTimer = setTimeout(() => {
