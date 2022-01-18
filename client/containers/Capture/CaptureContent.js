@@ -489,25 +489,7 @@ class CaptureContent extends Component {
         this.services = data.payload.data.data.list;
     }
 
-    handleOnSearch = (e) => {
-        e.preventDefault();
-        this.props.form.validateFields((err, values) => {
-          const msg = {
-              type: 'updateQuery',
-              refreshing: false,
-              filterObj: values
-          };
-        
-          myRecordWorker.postMessage(JSON.stringify(msg));
-        // 主动更新因table数据变量在state外声明导致视图不更新
-          setTimeout(() => {
-            this.forceUpdate();
-          }, 1000)
-        });
-    }
-
-    handleReset = () => {
-        this.props.form.resetFields();
+    updateFilter = () => {
         this.props.form.validateFields((err, values) => {
             const msg = {
                 type: 'updateQuery',
@@ -516,7 +498,20 @@ class CaptureContent extends Component {
             };
           
             myRecordWorker.postMessage(JSON.stringify(msg));
-        });
+          // 主动更新因table数据变量在state外声明导致视图不更新
+            setTimeout(() => {
+              this.forceUpdate();
+            }, 1000)
+          });
+    }
+    handleOnSearch = (e) => {
+        e.preventDefault();
+        this.updateFilter();
+    }
+
+    handleReset = () => {
+        this.props.form.resetFields();
+        this.updateFilter();
     }
 
     getTopicIdList = async () => {
