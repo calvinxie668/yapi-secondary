@@ -513,7 +513,7 @@ class CaptureContent extends Component {
                         // })
                         this.dataSource = [];
                         let obj = null;
-                        filterRcordList.forEach((item) => {
+                        filterRcordList.forEach((item, index, arr) => {
                            if(item.type === 'pull')  {
                                obj = {
                                    start_time: formatTime(item.request.requestTime/1000),
@@ -523,6 +523,7 @@ class CaptureContent extends Component {
                                    path: item.request.requestMsgType,
                                    type: item.type,
                                    id: item.id,
+                                   index: arr.length - index,
                                    request: item.request,
                                    response: item.response
                                 };
@@ -535,6 +536,7 @@ class CaptureContent extends Component {
                                     type: item.type,
                                     topicId: item.topicId || '--',
                                     id: item.id,
+                                    index: arr.length - index,
                                     notify: item.payload,
                                     duration: '--'
                                }
@@ -593,7 +595,7 @@ class CaptureContent extends Component {
             labelCol: { span: 8 },
             wrapperCol: { span: 16 }
         };
-        const { type, application, start_time, duration, origin, path, request, response, id: row_id, topicId, notify } = this.state.details
+        const { type, application, start_time, duration, origin, path, request, response, topicId, notify, index: row_index } = this.state.details
         const pStyle = {
             fontSize: 16,
             color: 'rgba(0,0,0,0.85)',
@@ -692,6 +694,7 @@ class CaptureContent extends Component {
                     </Collapse.Panel>
                 </Collapse>
                 <div style={{marginTop: '15px'}} ref={this.initRecrodPanelWrapperRef}>
+                 {this.state.showNewRecordTip && <div onClick={this.resumeFresh} className="detected"><span className="detected-name">New Records Detected.<span className="arrowDown"></span></span></div>}
                     <AutoSizer disableHeight>
                     {({ width, height }) => (
                         <Table 
@@ -717,7 +720,7 @@ class CaptureContent extends Component {
                                     }
                                     return (
                                         <span title={rowData.id}>
-                                            <span style={{paddingRight: '5px'}}>{rowData.id.split('-')[2]}</span>
+                                            <span style={{paddingRight: '5px'}}>{rowData.index}</span>
                                             <Tag  color={color} key={rowData.type}>
                                                 {rowData.type}
                                             </Tag>
@@ -735,11 +738,10 @@ class CaptureContent extends Component {
                         </Table>
                     )}
                     </AutoSizer>
-                    {this.state.showNewRecordTip && <div onClick={this.resumeFresh} className="detected"><span className="detected-name">New Records Detected.<span className="arrowDown"></span></span></div>}
                 </div>
                 {this.state.visible &&
                 <Drawer
-                    title={<span style={{paddingRight: '5px'}}>{row_id.split('-')[2]}<Tag color={color} key={type}>{type}</Tag>{application}</span>}
+                    title={<span style={{paddingRight: '5px'}}>{row_index}<Tag color={color} key={type}>{type}</Tag>{application}</span>}
                     placement="right"
                     width={760}
                     onClose={this.onClose}
