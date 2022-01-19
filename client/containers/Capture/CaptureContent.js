@@ -1,5 +1,5 @@
 import React, { PureComponent as Component, forwardRef, useImperativeHandle, createRef, Fragment } from "react";
-import { Button, Tag, Drawer, Row, Col, Divider, Modal, Input, Form, Select, Collapse, Radio, message } from 'antd'; 
+import { Button, Tag, Drawer, Row, Col, Divider, Modal, Input, Form, Select, Collapse, Radio, message, Icon } from 'antd'; 
 import {Column, Table, AutoSizer} from 'react-virtualized'
 import 'react-virtualized/styles.css';
 import ReactJson from 'react-json-view'
@@ -13,55 +13,36 @@ import RecordWorker from "worker-loader?inline!./CaptureWorker.js";
 import momnet from 'moment';
 let timer = null;
 let ws= null;
-// const columns = [
-//     {
-//         title: 'Application',
-//         dataIndex: 'application',
-//         render: (data, rowData) => {
-//             let color;
-//             if(rowData.type === 'pull') {
-//                 color = 'green'
-//             } else {
-//                 color = 'greeblue'
-//             }
-//             return (
-//                 <span title={rowData.id}>
-//                     <span>{rowData.id}</span>
-//                     <Tag  color={color} key={rowData.type}>
-//                         {rowData.type}
-//                     </Tag>
-//                     <span>{rowData.application}</span>
-//                 </span>
-//             )
-//         }
-//     },
-//     {
-//         title: 'Origin',
-//         dataIndex: 'origin',
-//         key:'origin',
-//     },
-//     {
-//         title: 'Path',
-//         dataIndex: 'path',
-//         key:'path',
-//     },
-//     {
-//         title: 'Start',
-//         dataIndex: 'start_time',
-//         key:'start_time',
-//     },
-//     {
-//         title: 'Duration',
-//         dataIndex: 'duration',
-//         key:'duration',
-//         width: 150,
-//         render: (data, rowData ) => {
-//             return (<span>{rowData.duration + 'ms'}</span>)  
-//         }
-        
-//     },
-// ]
 const myRecordWorker = new RecordWorker(window.URL.createObjectURL(new Blob([RecordWorker.toString()])));
+
+const Open = () => (
+    <svg t="1642581994572" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="71838" width="24" height="24">
+        <path d="M446.2592 0.546133c31.402667 0 53.794133 17.954133 58.299733 44.8512v403.592534h31.402667v-354.304c8.942933-26.8288 31.402667-44.782933 58.299733-44.782934 31.402667 0 53.794133 17.954133 58.231467 44.8512v385.570134c9.0112 4.5056 13.448533 9.0112 22.459733 13.448533v-260.096c8.942933-26.8288 26.897067-44.782933 58.299734-44.782933 31.402667 0 53.794133 17.954133 58.299733 44.8512 2.730667 133.256533 3.754667 241.732267 3.208533 325.495466a238.933333 238.933333 0 0 0-221.525333 416.768c-19.114667 4.3008-39.185067 6.5536-59.733333 6.5536a275.933867 275.933867 0 0 1-224.187734-112.093866c-53.794133-53.794133-125.610667-170.3936-215.2448-345.2928-13.448533-22.391467 0-49.288533 22.459734-67.242667a50.517333 50.517333 0 0 1 71.68 8.942933l80.759466 134.485334V188.962133c8.942933-26.897067 31.402667-44.8512 58.299734-44.8512 31.402667 0 53.794133 17.954133 58.299733 44.8512v286.993067c8.942933-4.5056 13.448533-4.5056 22.391467-9.0112V45.397333c8.942933-26.897067 31.402667-44.8512 58.299733-44.8512z" p-id="71839" fill="#8a8a8a"></path>
+        <path d="M948.224 754.551467L867.874133 653.312a21.7088 21.7088 0 0 0-34.133333 0l-79.940267 101.239467c-6.212267 7.509333-0.4096 19.0464 9.352534 19.0464h31.470933c-0.887467 59.050667-0.887467 134.007467-104.311467 193.9456-2.6624 1.774933-1.365333 5.7344 1.774934 5.3248 197.973333-30.651733 213.947733-163.293867 214.357333-198.792534h32.836267c9.8304-0.477867 15.1552-12.014933 8.874666-19.524266z m-252.996267 25.258666h-31.5392c0.887467-58.9824 0.887467-134.007467 104.311467-193.877333 2.730667-1.8432 1.365333-5.802667-1.774933-5.393067-197.973333 30.651733-213.947733 163.771733-214.357334 198.8608h-32.836266c-9.762133 0-15.5648 11.537067-9.352534 19.0464l80.349867 101.1712c8.874667 11.127467 25.258667 11.127467 34.133333 0l80.349867-101.1712c5.802667-7.099733 0.477867-18.6368-9.284267-18.6368z" p-id="71840" fill="#8a8a8a">
+        </path>
+    </svg>
+)
+
+const Play = () => (
+    <svg t="1642577264410" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4888" width="24" height="24">
+        <path d="M893.035 463.821679C839.00765 429.699141 210.584253 28.759328 179.305261 8.854514 139.495634-16.737389 99.686007 17.385148 99.686007 57.194775v909.934329c0 45.496716 42.653172 68.245075 76.775709 48.340262 45.496716-28.435448 676.763657-429.375262 716.573284-454.967165 34.122537-22.748358 34.122537-76.775709 0-96.680522z" fill="#8a8a8a" p-id="4889">
+        </path>
+    </svg>
+)
+
+const Pause = () => (
+    <svg t="1642581372378" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="49181" width="24" height="24">
+        <path d="M309.3 130.7h-70.9c-24.3 0-44 19.7-44 44v674.5c0 24.3 19.7 44 44 44h70.9c24.3 0 44-19.7 44-44V174.7c0-24.3-19.7-44-44-44z m476.3 0h-70.9c-24.3 0-44 19.7-44 44v674.5c0 24.3 19.7 44 44 44h70.9c24.3 0 44-19.7 44-44V174.7c0-24.3-19.7-44-44-44z" p-id="49182" fill="#8a8a8a">
+        </path>
+    </svg>
+)
+
+const Clear = () => (
+    <svg t="1642577873885" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="17302" width="24" height="24">
+        <path d="M985.6 960H448l275.2-275.2 275.2-275.2c6.4-6.4 12.8-19.2 19.2-25.6v-6.4-6.4c6.4-19.2 0-44.8-12.8-64 0-6.4-6.4-6.4-12.8-12.8L729.6 32c-12.8-19.2-25.6-25.6-44.8-32h-38.4c-12.8 6.4-25.6 12.8-38.4 25.6L25.6 614.4c-32 32-32 89.6 0 121.6L249.6 960H160c-19.2 0-32 12.8-32 32s12.8 32 32 32h825.6c19.2 0 32-12.8 32-32s-12.8-32-32-32zM377.6 377.6L640 640l-294.4 294.4-262.4-262.4 294.4-294.4z" fill="#8a8a8a" p-id="17303">
+        </path>
+    </svg>
+)
 const DescriptionItem = ({ title, content }) => (
     <div
       style={{
@@ -190,7 +171,8 @@ class CaptureContent extends Component {
             modalVisible: false,
             memberId: null,
             curRowIndex: null,
-            closeDisabled: true
+            closeDisabled: true,
+            isPlay: true
         }
         this.refreshing = true;
         this.recordTableRef = null;
@@ -221,7 +203,8 @@ class CaptureContent extends Component {
             console.log(evt)
             this.props.setWS(ws);
             this.setState({
-                closeDisabled: false
+                closeDisabled: false,
+                isPlay: false
             })
             this.heartBeat();
         };
@@ -296,6 +279,9 @@ class CaptureContent extends Component {
     }
 
     closeConnect = () => {
+        this.setState({
+            isPlay: true
+        });
         ws.close(); 
     }
 
@@ -323,17 +309,6 @@ class CaptureContent extends Component {
         this.setState({
             curRowIndex: index
         })
-        this.stopPanelRefreshing();
-        this.setState({
-            details: rowData
-        })
-        this.showDrawer();
-    }
-    handleClickRow = (event, rowData) => {
-        this.setState({
-            curRowIndex: rowData.id
-        })
-        event.preventDefault();
         this.stopPanelRefreshing();
         this.setState({
             details: rowData
@@ -368,15 +343,17 @@ class CaptureContent extends Component {
         });
     };
     startCountTime = (date) => {
-        // 超过30分钟关闭ws
-        let diffTime = ''
-        timer = setInterval(() =>{
-            diffTime = momnet().diff(momnet(date), 'minute');
-            if(diffTime > 30) {
-              ws.close();
-              clearInterval(timer)
-            }
-        }, 1000)
+        // 超过10分钟自动关闭ws
+        if(this.wsStatus === 'open' && !!ws) {
+            let diffTime = ''
+            timer = setInterval(() =>{
+                diffTime = momnet().diff(momnet(date), 'minute');
+                if(diffTime > 10) {
+                  ws.close();
+                  clearInterval(timer)
+                }
+            }, 1000)
+        } 
     }
 
     loadPrevious = () => {
@@ -407,6 +384,11 @@ class CaptureContent extends Component {
     }
 
     resumeFresh = () => {
+        if(this.state.curRowIndex != null) {
+            this.setState({
+                curRowIndex: null
+            })
+        }
         this.setState({
             "showNewRecordTip": false
         });
@@ -493,7 +475,6 @@ class CaptureContent extends Component {
         this.props.form.validateFields((err, values) => {
             const msg = {
                 type: 'updateQuery',
-                refreshing: false,
                 filterObj: values
             };
           
@@ -584,26 +565,25 @@ class CaptureContent extends Component {
             if(prevLocation.pathname === '/capture/content' && !!ws) {
                 ws.close();
             }
-            if(currLocation.pathname && timer) {
-              clearInterval(timer)
+        });
+
+        window.addEventListener('visibilitychange', () => {
+            if(document.visibilityState === 'hidden' && window.location.href.indexOf('/capture/content') > -1) {
+                console.log('离开')
+                const date = new Date();
+                if(timer){
+                    clearInterval(timer)
+                }
+
+                this.startCountTime(date)
             }
-            window.addEventListener('visibilitychange', () => {
-                if(document.visibilityState === 'hidden' && window.location.href.indexOf('/capture/content') > -1) {
-                    console.log('离开')
-                    const date = new Date();
-                    if(timer){
-                      clearInterval(timer)
-                    }
-                    this.startCountTime(date)
+            if(document.visibilityState === 'visible') {
+                console.log('回来');
+                if(window.location.href.indexOf('/capture/content') > -1) {
+                    clearInterval(timer)
                 }
-                if(document.visibilityState === 'visible') {
-                    console.log('回来');
-                    if(window.location.href.indexOf('/capture/content') > -1) {
-                        clearInterval(timer)
-                    }
-                }
-            })
-          })
+            }
+        });
     }
 
     render () {
@@ -629,11 +609,10 @@ class CaptureContent extends Component {
         }   
         return (
             <div className="capture-main" style={{ paddingLeft: '32px', paddingRight: '32px' }}>
-                <Button type="primary" onClick={this.handleOpenModal} style={{marginRight: '15px'}}>Open</Button>
-                <Button type="primary" disabled={this.state.closeDisabled} style={{marginRight: '15px'}} onClick={this.closeConnect}>Close</Button>
-                <Button type="primary" disabled={!this.dataSource.length} onClick={this.handleClearData}>Clear</Button>
-                {/* <span style={{paddingRight:  '10px'}}>原始数据量: {this.state.originData.length}</span>
-                <span>table数据量: {this.dataSource.length}</span> */}
+                <Icon component={Open} onClick={this.handleOpenModal} style={{marginRight: '20px'}} title="open"/>
+                {this.state.isPlay ? <Icon component={Play} className={!!ws? '': 'disabled'} title="play" style={{marginRight: '20px'}} onClick={() => this.init(this.state.memberId)}/> 
+                : <Icon component={Pause} className={this.state.closeDisabled ? 'disabled': ''} title="pause" style={{marginRight: '20px'}} onClick={this.closeConnect}/>}
+                <Icon component={Clear} onClick={this.handleClearData} title="clear" className={!this.dataSource.length? 'disabled': ''}/>
                 <Collapse style={{marginTop: '15px'}}>
                     <Collapse.Panel
                         header="Filter"
@@ -756,16 +735,6 @@ class CaptureContent extends Component {
                         </Table>
                     )}
                     </AutoSizer>
-                    {/* <Table 
-                     columns={columns} 
-                     dataSource={this.dataSource} 
-                     pagination={false} 
-                     scroll={{ y: 640 }} 
-                     rowKey='id'
-                     rowClassName={this.rowStyleFormat}
-                     onRow={record => { return { onClick: e =>  this.handleClickRow(e, record)}}}
-                     >
-                    </Table> */}
                     {this.state.showNewRecordTip && <div onClick={this.resumeFresh} className="detected"><span className="detected-name">New Records Detected.<span className="arrowDown"></span></span></div>}
                 </div>
                 {this.state.visible &&

@@ -187,11 +187,11 @@ self.addEventListener('message', e => {
 
         case 'updateQuery': {
             // if filterStr or limit changed
-               self.refreshing = data.refreshing;
+              //  self.refreshing = data.refreshing;
             // if (data.filterStr !== self.filterStr) {
               self.updateQueryTimer && clearTimeout(self.updateQueryTimer);
               self.updateQueryTimer = setTimeout(() => {
-                self.resetDisplayRecordIndex();
+                // self.resetDisplayRecordIndex();
                 self.filterObj = data.filterObj;
                 self.calculateFilteredRecords(true);
                 self.diffRecords();

@@ -54,3 +54,8 @@
     padding-top: 0 !important;
     padding-bottom: 0 !important;
 }
+.disabled {
+    cursor: not-allowed !important;
+    pointer-events: none;
+    opacity: 0.6;
+}
