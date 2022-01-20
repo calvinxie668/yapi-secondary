@@ -61,7 +61,8 @@ self.calculateFilteredRecords = function (isFullyCalculate, listForThisTime = []
         const length = recordListbyfilter.length;
         // filtered out the records
         for (let i = 0; i < length; i++) {
-            const item = recordListbyfilter[i];
+            let item = recordListbyfilter[i];
+            item.originIndex = i + 1;
             const itemStr = JSON.stringify(item);
             if(!self.filterObj['requestMsgType'] || (item['request'] && item['request'].hasOwnProperty('requestMsgType') && item['request']['requestMsgType'] === self.filterObj['requestMsgType']) || (item && item.hasOwnProperty('topicId') && item['topicId'] === self.filterObj['requestMsgType'])) {
                 if(!self.filterObj['responseMsgType'] || (item['response'] && item['response'].hasOwnProperty('responseMsgType') && item['response']['responseMsgType'] === self.filterObj['responseMsgType']) || (item && item.hasOwnProperty('msgType') && item['msgType'] === self.filterObj['responseMsgType'])) {
@@ -101,7 +102,7 @@ self.calculateFilteredRecords = function (isFullyCalculate, listForThisTime = []
     }
 }
 
-self.diffRecords = function () {
+self.diffRecords = function (isForceUpdate = false) {
     if(self.IN_DIFF) {
         return;
     }
@@ -116,7 +117,6 @@ self.diffRecords = function () {
             self.endIndex = self.FILTERED_RECORD_LIST.length;
         } 
     }
-
     const newStateRecords = self.FILTERED_RECORD_LIST.slice(self.beginIndex, self.endIndex + 1);
     const currentDataLength = self.currentStateData.length;
     const newDataLength = newStateRecords.length;
@@ -137,6 +137,7 @@ self.diffRecords = function () {
     self.currentStateData = newStateRecords;
     self.postMessage(JSON.stringify({
         type: 'updateData',
+        isForceUpdate,
         shouldUpdateRecord,
         recordList: newStateRecords
     }));
@@ -148,7 +149,6 @@ self.checkNewRecordsTip = function () {
     if (self.IN_DIFF) {
       return;
     }
-  
     const newRecordLength = self.FILTERED_RECORD_LIST.length;
     self.postMessage(JSON.stringify({
       type: 'updateTip',
@@ -181,7 +181,7 @@ self.addEventListener('message', e => {
         case 'initRecord': {
             recordList = data.data;
             self.calculateFilteredRecords(true);
-            self.diffRecords();
+            self.diffRecords(true);
             break;
         }
 
@@ -220,7 +220,7 @@ self.addEventListener('message', e => {
             } else {
               self.beginIndex = Math.max(self.beginIndex + data.data, 0);
             }
-            self.diffRecords();
+            self.diffRecords(true);
             break;
         }
 
