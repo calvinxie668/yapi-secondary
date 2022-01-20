@@ -1,0 +1,13 @@
+diff --git a/node_modules/react-virtualized/dist/commonjs/Table/defaultCellDataGetter.js b/node_modules/react-virtualized/dist/commonjs/Table/defaultCellDataGetter.js
+index cc71553..f728d75 100644
+--- a/node_modules/react-virtualized/dist/commonjs/Table/defaultCellDataGetter.js
++++ b/node_modules/react-virtualized/dist/commonjs/Table/defaultCellDataGetter.js
+@@ -15,7 +15,7 @@ var _types = require("./types");
+ function defaultCellDataGetter(_ref) {
+   var dataKey = _ref.dataKey,
+       rowData = _ref.rowData;
+-
++  if(rowData == undefined) return ''; //hack patch -- coded by wenhao.xie
+   if (typeof rowData.get === 'function') {
+     return rowData.get(dataKey);
+   } else {

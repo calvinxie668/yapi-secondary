@@ -20,7 +20,7 @@ target/
 *.log
 *.cache
 *.diff
-*.patch
+#*.patch
 *.tmp
 
 # system ignore
