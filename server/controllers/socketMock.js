@@ -10,7 +10,6 @@ const Mock = require('mockjs');
 const schedule = require('node-schedule');
 const axios = require('axios');
 
-
 const startCron = (name, step=1, callback) => {
   if(!name && typeof callback != 'function') return
   return new Promise(resolve => {
@@ -252,7 +251,7 @@ class socketMockController extends baseController {
         }
 
         const result = await startCron('cron' + cron_id, step, callback);
-
+        console.log(result)
         if(result && result.code === 200) {
           ctx.body = yapi.commons.resReturn({success: true, msg: '开始推送', data: null})
         } else {

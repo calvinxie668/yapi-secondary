@@ -183,7 +183,10 @@ class CaptureContent extends Component {
         this.wsStatus = null;
         this.dataSource = [];
         this.services = [];
+        this.retry = 3; //断线重连
         this.wsUrlData = {};
+        this.reconnectTimer = null;
+        this.diffTimer = null
     }
 
     init = (memberId) => {
@@ -240,7 +243,8 @@ class CaptureContent extends Component {
             this.wsStatus = evt.type;
             message.info('抓包服务已断开连接')
             this.setState({
-                closeDisabled: true
+                closeDisabled: true,
+                isPlay: true
             })
             // this.reconnect();
             console.log('close')
@@ -254,6 +258,7 @@ class CaptureContent extends Component {
 // ws 断线重连
     reconnect = () => {
         if(this.state.lockReconnect) return;
+        if(this.retry == 0) return this.retry = 3;
         this.setState({
             lockReconnect: true
         });
@@ -263,6 +268,7 @@ class CaptureContent extends Component {
             this.setState({
                 lockReconnect: false
             })
+            this.retry -= 1;
         }, parseInt(Math.random()*2000 + 3000))
     }
 // 心跳机制 30s向服务端发送一次心跳 60s超时关闭
@@ -279,9 +285,6 @@ class CaptureContent extends Component {
     }
 
     closeConnect = () => {
-        this.setState({
-            isPlay: true
-        });
         ws.close(); 
     }
 
@@ -499,7 +502,8 @@ class CaptureContent extends Component {
           
             myRecordWorker.postMessage(JSON.stringify(msg));
           // 主动更新因table数据变量在state外声明导致视图不更新
-            setTimeout(() => {
+            this.diffTimer && clearTimeout(this.diffTimer);
+            this.diffTimer = setTimeout(() => {
               this.forceUpdate();
             }, 1000)
           });
@@ -516,6 +520,24 @@ class CaptureContent extends Component {
 
     getTopicIdList = async () => {
         await this.props.getTopicIdList({method: 'PUSH'});
+    }
+
+    handleVisibilitychange = () => {
+        if(document.visibilityState === 'hidden' && window.location.href.indexOf('/capture/content') > -1) {
+            console.log('离开')
+            const date = new Date();
+            if(timer){
+                clearInterval(timer)
+            }
+
+            this.startCountTime(date)
+        }
+        if(document.visibilityState === 'visible') {
+            console.log('回来');
+            if(window.location.href.indexOf('/capture/content') > -1) {
+                clearInterval(timer)
+            }
+        }
     }
 
     componentDidMount() {
@@ -565,7 +587,8 @@ class CaptureContent extends Component {
                             // }))
                             this.dataSource.push(obj);
                             if(data.isForceUpdate) {
-                                setTimeout(() => {
+                                this.diffTimer && clearTimeout(this.diffTimer);
+                                this.diffTimer = setTimeout(() => {
                                     this.forceUpdate();
                                 }, 500)
                             }
@@ -593,23 +616,11 @@ class CaptureContent extends Component {
             }
         });
 
-        window.addEventListener('visibilitychange', () => {
-            if(document.visibilityState === 'hidden' && window.location.href.indexOf('/capture/content') > -1) {
-                console.log('离开')
-                const date = new Date();
-                if(timer){
-                    clearInterval(timer)
-                }
+        window.addEventListener('visibilitychange', this.handleVisibilitychange);
+    }
 
-                this.startCountTime(date)
-            }
-            if(document.visibilityState === 'visible') {
-                console.log('回来');
-                if(window.location.href.indexOf('/capture/content') > -1) {
-                    clearInterval(timer)
-                }
-            }
-        });
+    componentWillUnmount () {
+        window.removeEventListener('visibilitychange', this.handleVisibilitychange);
     }
 
     render () {

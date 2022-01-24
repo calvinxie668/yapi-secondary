@@ -10,7 +10,6 @@ class baseModel {
   constructor() {
     this.schema = new mongoose.Schema(this.getSchema());
     this.name = this.getName();
-
     if (this.isNeedAutoIncrement() === true) {
       this.schema.plugin(autoIncrement.plugin, {
         model: this.name,

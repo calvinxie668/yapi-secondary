@@ -19,7 +19,8 @@ class cronModel extends baseModel {
         minute: Number,
         stock_codes: String,
         add_time: Number,
-        up_time: Number
+        up_time: Number,
+        switch_loading: {type: Boolean, default: false},
       }
     }
     save(data) {
@@ -83,8 +84,7 @@ class cronModel extends baseModel {
             data,
             { runValidators: true }
         );
-    }
-    
+    }    
     
 }
 

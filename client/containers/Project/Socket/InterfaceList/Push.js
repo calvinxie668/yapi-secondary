@@ -7,6 +7,7 @@ import axios from 'axios';
 import { formatTime } from '../../../../common.js';
 import { withRouter } from 'react-router-dom';
 import AceEditor from 'client/components/AceEditor/AceEditor';
+const http  =  require('../../../../../common/http-debounce.js'); 
 const FormItem = Form.Item;
 
 @connect(
@@ -108,7 +109,7 @@ class socketPush  extends Component {
                       key: 'push_switch_status',
                       render: (text, record) => {
                         return (
-                          <Switch checkedChildren="开" unCheckedChildren="关" checked={text.push_switch_status} onChange={(checked) => this.handlePushSwitch(checked, record)}/>
+                          <Switch checkedChildren="开" unCheckedChildren="关" loading={record.switch_loading}  checked={text.push_switch_status} onChange={(checked) => this.handlePushSwitch(checked, record)}/>
                         )
                       }
                     },
@@ -295,19 +296,24 @@ class socketPush  extends Component {
         this.setState({visible: false});
       }
     
-      handlePushSwitch = (checked, record) => {
+      handlePushSwitch = async(checked, record) => {
         let status = checked ? 1 : 0;
         if(checked) {
-          this.handelPushMock(record)
+          this.handleUpdate(record._id, {
+            switch_loading: true
+          })
+          await this.handelPushMock(record)
           .then(res => {
+            this.
             status = !!res ? 1 : -1;
           })
         } else {
-          this.handelCancelPushMock(record)
+          await this.handelCancelPushMock(record)
         }
         this.handleUpdate(record._id, {
           status,
-          push_switch_status: checked
+          push_switch_status: checked,
+          switch_loading: false
         })
       }
     
@@ -360,7 +366,7 @@ class socketPush  extends Component {
           cron_id: _id
         }
         return new Promise(resolve => {
-          axios.post('/api/mock/push', params)
+          http.post('/api/mock/push', params)
           .then(res => {
             if(res.data.data.success) {
               message.success('正在开始推送...');
@@ -376,7 +382,7 @@ class socketPush  extends Component {
       }
     
       handelCancelPushMock = (record) => {
-        return axios.post('/api/mock/cancel_push', {
+        return http.post('/api/mock/cancel_push', {
           cron_id: record._id
         })
         .then(res => {
