@@ -45,10 +45,13 @@ const startCronInterval = (name, callback, time = 1000) => {
 }
 
 const cancelCronInterval = (name) => {
-  if(cronMap.has(name)) {
-     clearInterval(cronMap.get(name)) 
-     cronMap.delete(name);
-  }
+  return new Promise((resolve) => {
+    if(cronMap.has(name)) {
+       clearInterval(cronMap.get(name)) 
+       cronMap.delete(name);
+       resolve(true)
+    }
+  })
 }
 class socketMockController extends baseController {
   constructor(ctx) {
@@ -311,7 +314,7 @@ class socketMockController extends baseController {
     //   console.log('=======shcjobs start=========')
     //   console.log(schedule.scheduledJobs)
     //   console.log('=======shcjobs end=========')
-    cancelCronInterval(cron_id);
+    await cancelCronInterval(cron_id);
     console.log(cronMap)
     ctx.body = yapi.commons.resReturn({success: true})
   }
