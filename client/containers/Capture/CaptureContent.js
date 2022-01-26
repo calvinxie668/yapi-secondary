@@ -558,7 +558,7 @@ class CaptureContent extends Component {
                            if(item.type === 'pull')  {
                                obj = {
                                    start_time: formatTime(item.request.requestTime/1000),
-                                   application: 'hs-interface-socket-daily',
+                                   application:  this.wsUrlData.name,
                                    duration: item.costTime,
                                    origin: item.origin,
                                    path: item.request.requestMsgType,
@@ -571,7 +571,7 @@ class CaptureContent extends Component {
                            } else {
                                obj = {
                                     start_time: '--',
-                                    application: 'hs-interface--push-pc-daily',
+                                    application:  this.wsUrlData.name,
                                     origin: item.origin,
                                     path: item.msgType,
                                     type: item.type,
