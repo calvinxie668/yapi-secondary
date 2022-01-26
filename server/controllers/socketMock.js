@@ -10,8 +10,12 @@ const Mock = require('mockjs');
 const schedule = require('node-schedule');
 const axios = require('axios');
 
+
+let cronMap = new Map();
+
 const startCron = (name, step=1, callback) => {
-  if(!name && typeof callback != 'function') return
+  if(!name && typeof callback != 'function'|| schedule.scheduledJobs[name]) return
+  console.log(schedule.scheduledJobs)
   return new Promise(resolve => {
     schedule.scheduleJob(name, `*/${step} * * * * *`, async () => {
       let cb =  await callback();
@@ -29,6 +33,23 @@ const cancelCron = async (id) => {
   schedule.scheduledJobs[name].cancel();
 }
 
+const startCronInterval = (name, callback, time = 1000) => {
+  if(!name && typeof callback != 'function' && cronMap.get(name) != undefined) return
+  return new Promise(resolve => {
+    let timer = setInterval(() => {
+     let cb =  callback()
+      resolve(cb)
+    }, time);
+    cronMap.set(name, timer);
+  })
+}
+
+const cancelCronInterval = (name) => {
+  if(cronMap.has(name)) {
+     clearInterval(cronMap.get(name)) 
+     cronMap.delete(name);
+  }
+}
 class socketMockController extends baseController {
   constructor(ctx) {
     super(ctx);
@@ -148,6 +169,9 @@ class socketMockController extends baseController {
     if(!stock_codes) {
       return ctx.body = yapi.commons.resReturn(null, 400, '股票代码不能为空');
     }
+    if(schedule.scheduledJobs['cron' + cron_id]) {
+      return ctx.body = yapi.commons.resReturn(null, 400, '当前任务已存在，请勿重复开启');
+    }
     let socket_list = await this.socketModel.get(socket_id);
     const { topic_id, push_msg_type, push_msg_body } = socket_list;
     let mock_data = await this.advModel.get(socket_id);
@@ -204,7 +228,8 @@ class socketMockController extends baseController {
         console.log(context.mockJson);
         // const content = JSON.stringify(context.mockJson.data);
         // console.log(context.mockJson.data)
-        let step =  times && minute && Math.ceil(minute*60/times) > 1 ? Math.ceil(minute*60/times) : 1;
+        // let step =  times && minute && Math.ceil(minute*60/times) > 1 ? Math.ceil(minute*60/times) : 1; 
+        let step =  minute*60* 1000/times
         let count = 0;
         const callback = () => {
           console.log('this is a cron job!')
@@ -213,7 +238,7 @@ class socketMockController extends baseController {
             console.log('count', count)
             if (count >= times) {
               // 次数达到设置值自动关闭
-              cancelCron(cron_id)
+              cancelCronInterval(cron_id)
               // resolve({code: 201, msg: '推送完毕'})
             }
             const stockCodes = stock_codes.split(',');
@@ -223,7 +248,7 @@ class socketMockController extends baseController {
                 freq = Math.ceil(times/(minute * 60)) >= 1 ? Math.ceil(times/(minute * 60)) : 1;
             }
 
-            while(i < freq) {
+            // while(i < freq) {
               
               Promise.all(stockCodes.map(code => {
                 axios.post('http://192.168.90.62:7369/mock/push',{
@@ -240,19 +265,21 @@ class socketMockController extends baseController {
                 .catch(err => {
                   // console.log(err)
                   resolve({data: { code: '100'}})
-                  cancelCron(cron_id);
+                  cancelCronInterval(cron_id);
                 })
               })).then(()=>{
                 count++
               })
-              i++
-            }
+            //   i++
+            // }
           })
         }
 
-        const result = await startCron('cron' + cron_id, step, callback);
+        // const result = await startCron('cron' + cron_id, step, callback);
+        const result = await startCronInterval(cron_id, callback, step)
         console.log(result)
-        if(result && result.code === 200) {
+        console.log(cronMap)
+        if(result == undefined || result.code === 200) {
           ctx.body = yapi.commons.resReturn({success: true, msg: '开始推送', data: null})
         } else {
           ctx.body = yapi.commons.resReturn({success: false, msg: '推送失败', data: null})
@@ -279,11 +306,13 @@ class socketMockController extends baseController {
     if(!cron_id) {
       return ctx.body = yapi.commons.resReturn(null, 400, '任务id不能为空');
     }
-    console.log('cancel cron');
-    cancelCron(cron_id);
-      console.log('=======shcjobs start=========')
-      console.log(schedule.scheduledJobs)
-      console.log('=======shcjobs end=========')
+    // console.log('cancel cron');
+    // // cancelCron(cron_id);
+    //   console.log('=======shcjobs start=========')
+    //   console.log(schedule.scheduledJobs)
+    //   console.log('=======shcjobs end=========')
+    cancelCronInterval(cron_id);
+    console.log(cronMap)
     ctx.body = yapi.commons.resReturn({success: true})
   }
 /**
