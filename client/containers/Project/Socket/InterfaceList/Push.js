@@ -109,7 +109,7 @@ class socketPush  extends Component {
                       key: 'push_switch_status',
                       render: (text, record) => {
                         return (
-                          <Switch checkedChildren="开" unCheckedChildren="关" loading={record.switch_loading}  checked={text.push_switch_status} onChange={(checked) => this.handlePushSwitch(checked, record)}/>
+                          <Switch checkedChildren="开" unCheckedChildren="关"  checked={text.push_switch_status} onChange={(checked) => this.handlePushSwitch(checked, record)}/>
                         )
                       }
                     },
@@ -299,9 +299,9 @@ class socketPush  extends Component {
       handlePushSwitch = async(checked, record) => {
         let status = checked ? 1 : 0;
         if(checked) {
-          this.handleUpdate(record._id, {
-            switch_loading: true
-          })
+          // this.handleUpdate(record._id, {
+          //   switch_loading: true
+          // })
           await this.handelPushMock(record)
           .then(res => {
             this.
@@ -313,7 +313,7 @@ class socketPush  extends Component {
         this.handleUpdate(record._id, {
           status,
           push_switch_status: checked,
-          switch_loading: false
+          // switch_loading: false
         })
       }
     

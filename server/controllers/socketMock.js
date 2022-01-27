@@ -9,6 +9,7 @@ const advModel = require('../../exts/yapi-plugin-advanced-mock/advMockModel.js')
 const Mock = require('mockjs');
 const schedule = require('node-schedule');
 const axios = require('axios');
+let cronModelInst = yapi.getInst(cronModel);
 
 
 let cronMap = new Map();
@@ -36,8 +37,8 @@ const cancelCron = async (id) => {
 const startCronInterval = (name, callback, time = 1000) => {
   if(!name && typeof callback != 'function' && cronMap.get(name) != undefined) return
   return new Promise(resolve => {
-    let timer = setInterval(() => {
-     let cb =  callback()
+    let timer = setInterval(async () => {
+     let cb =  await callback()
       resolve(cb)
     }, time);
     cronMap.set(name, timer);
@@ -45,12 +46,10 @@ const startCronInterval = (name, callback, time = 1000) => {
 }
 
 const cancelCronInterval = (name) => {
-  let cronModelInst = yapi.getInst(cronModel);
-  return new Promise(async(resolve) => {
+  return new Promise((resolve) => {
     if(cronMap.has(name)) {
        clearInterval(cronMap.get(name)) 
        cronMap.delete(name);
-       await cronModelInst.up(name, {push_switch_status: false, status: 0});
        resolve(true)
     }
   })
@@ -172,11 +171,13 @@ class socketMockController extends baseController {
       return ctx.body = yapi.commons.resReturn(null, 400, '任务id不能为空');
     }
     if(!stock_codes) {
+
       return ctx.body = yapi.commons.resReturn(null, 400, '股票代码不能为空');
     }
-    if(schedule.scheduledJobs['cron' + cron_id]) {
+    if(cronMap.has(cron_id)) {
       return ctx.body = yapi.commons.resReturn(null, 400, '当前任务已存在，请勿重复开启');
     }
+
     let socket_list = await this.socketModel.get(socket_id);
     const { topic_id, push_msg_type, push_msg_body } = socket_list;
     let mock_data = await this.advModel.get(socket_id);
@@ -243,7 +244,9 @@ class socketMockController extends baseController {
             console.log('count', count)
             if (count >= times) {
               // 次数达到设置值自动关闭
-              cancelCronInterval(cron_id)
+              cancelCronInterval(cron_id).then(async () => {
+                   await cronModelInst.up(cron_id, {push_switch_status: false, status: 0});
+              })
               // resolve({code: 201, msg: '推送完毕'})
             }
             const stockCodes = stock_codes.split(',');
@@ -266,11 +269,19 @@ class socketMockController extends baseController {
                 .then(res => {
                   console.log(res.data)
                   resolve(res.data)
+                  if(res.data && res.data.code !== 200) {
+                    // code == 200 成功 100 失败
+                    cancelCronInterval(cron_id).then(async () => {
+                      await cronModelInst.up(cron_id, {push_switch_status: false, status: 0});
+                    })
+                  }
                 })
                 .catch(err => {
                   // console.log(err)
                   resolve({data: { code: '100'}})
-                  cancelCronInterval(cron_id);
+                  cancelCronInterval(cron_id).then(async () => {
+                    await cronModelInst.up(cron_id, {push_switch_status: false, status: 0});
+                  })
                 })
               })).then(()=>{
                 count++
@@ -281,14 +292,14 @@ class socketMockController extends baseController {
         }
 
         // const result = await startCron('cron' + cron_id, step, callback);
-        const result = await startCronInterval(cron_id, callback, step)
-        console.log(result)
+        startCronInterval(cron_id, callback, step)
         console.log(cronMap)
-        if(result == undefined || result.code === 200) {
-          ctx.body = yapi.commons.resReturn({success: true, msg: '开始推送', data: null})
-        } else {
-          ctx.body = yapi.commons.resReturn({success: false, msg: '推送失败', data: null})
-        }
+        ctx.body = yapi.commons.resReturn({success: true, msg: '开始推送', data: null})
+        // if(result == undefined || result.code === 200) {
+        //   ctx.body = yapi.commons.resReturn({success: true, msg: '开始推送', data: null})
+        // } else {
+        //   ctx.body = yapi.commons.resReturn({success: false, msg: '推送失败', data: null})
+        // }
       } catch (e) {
         yapi.commons.log(e, 'error');
         return (ctx.body = {
@@ -317,6 +328,7 @@ class socketMockController extends baseController {
     //   console.log(schedule.scheduledJobs)
     //   console.log('=======shcjobs end=========')
     await cancelCronInterval(cron_id);
+    await cronModelInst.up(cron_id, {push_switch_status: false, status: 0});
     console.log(cronMap)
     ctx.body = yapi.commons.resReturn({success: true})
   }
