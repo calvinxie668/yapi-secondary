@@ -45,10 +45,12 @@ const startCronInterval = (name, callback, time = 1000) => {
 }
 
 const cancelCronInterval = (name) => {
-  return new Promise((resolve) => {
+  let cronModelInst = yapi.getInst(cronModel);
+  return new Promise(async(resolve) => {
     if(cronMap.has(name)) {
        clearInterval(cronMap.get(name)) 
        cronMap.delete(name);
+       await cronModelInst.up(name, {push_switch_status: false, status: 0});
        resolve(true)
     }
   })

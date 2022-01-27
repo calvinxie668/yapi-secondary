@@ -11,7 +11,7 @@ import {
   initInterface
 } from '../../../../reducer/modules/interface.js';
 import { getProject } from '../../../../reducer/modules/project.js';
-import { Input, Icon, Button, Modal, message, Tree, Tooltip } from 'antd';
+import { Input, Icon, Button, Modal, message, Tree, Tooltip, Tag } from 'antd';
 import AddInterfaceForm from './AddInterfaceForm';
 import AddInterfaceCatForm from './AddInterfaceCatForm';
 import axios from 'axios';
@@ -474,7 +474,7 @@ class InterfaceMenu extends Component {
                 onClick={e => e.stopPropagation()}
                 to={'/project/' + matchParams.id + '/socket/api/' + item._id}
               >
-                {item.title}
+                {item.method === 'PUSH'  ? <Tag color="#00a854">推</Tag> : ''}{item.title }
               </Link>
               <div className="btns">
                 <Tooltip title="删除接口">
