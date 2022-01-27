@@ -327,9 +327,9 @@ class socketMockController extends baseController {
     //   console.log('=======shcjobs start=========')
     //   console.log(schedule.scheduledJobs)
     //   console.log('=======shcjobs end=========')
+    await cancelCronInterval(cron_id);
     await cronModelInst.up(cron_id, {push_switch_status: false, status: 0});
     ctx.body = yapi.commons.resReturn({success: true})
-    await cancelCronInterval(cron_id);
     console.log(cronMap)
   }
 /**
