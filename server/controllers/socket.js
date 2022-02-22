@@ -266,7 +266,8 @@ class socketController extends baseController {
    * @example ./api/socket/list.json
    */
    async list(ctx) {
-    let project_id = ctx.params.project_id;
+		 let project_id = ctx.params.project_id;
+		 let method = ctx.params.method;
     let page = ctx.request.query.page || 1,
       limit = ctx.request.query.limit || 10;
     let status = ctx.request.query.status,

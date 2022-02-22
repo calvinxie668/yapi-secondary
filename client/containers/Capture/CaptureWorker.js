@@ -107,7 +107,7 @@ self.diffRecords = function (isForceUpdate = false) {
         return;
     }
     self.IN_DIFF = true;
-    let shouldUpdateRecord = false;
+    let shouldUpdateRecord = true;
 
     if(self.refreshing) {
         self.beginIndex = Math.max(self.FILTERED_RECORD_LIST.length - 1 - defaultLimit, 0);
@@ -134,7 +134,7 @@ self.diffRecords = function (isForceUpdate = false) {
         }
     }
 
-    self.currentStateData = newStateRecords;
+		self.currentStateData = newStateRecords;
     self.postMessage(JSON.stringify({
         type: 'updateData',
         isForceUpdate,
@@ -157,10 +157,6 @@ self.checkNewRecordsTip = function () {
 };
 
 self.updateSingle = function (record) {
-    recordList.forEach((item) => {
-      item._render = false;
-    });
-  
     const index = recordList.findIndex((item) => {
       return item.id === record.id;
     });
@@ -172,6 +168,11 @@ self.updateSingle = function (record) {
     } else {
       recordList.push(record);
     }
+
+    recordList.forEach((item, index) => {
+      item._render = false;
+      item.originIndex = index + 1;
+    });
     self.calculateFilteredRecords(false, [record]);
 };
 

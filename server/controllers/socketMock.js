@@ -35,13 +35,15 @@ const cancelCron = async (id) => {
 }
 
 const startCronInterval = (name, callback, time = 1000) => {
-  if(!name && typeof callback != 'function' && cronMap.get(name) != undefined) return
+  if(!name && typeof callback != 'function') return
   return new Promise(resolve => {
     let timer = setInterval(async () => {
      let cb =  await callback()
       resolve(cb)
     }, time);
-    cronMap.set(name, timer);
+		if(!cronMap.has(name)) {
+			cronMap.set(name, timer);
+		}
   })
 }
 
@@ -163,8 +165,8 @@ class socketMockController extends baseController {
    * @returns 
    */
   async openMockPush(ctx) {
-    const { socket_id, minute, times, stock_codes, cron_id } = ctx.params;
-    if(!socket_id) {
+    const { socket_ids, minute, times, stock_codes, cron_id } = ctx.params;
+    if(Array.isArray(socket_ids) && socket_ids.length == 0) {
       return ctx.body = yapi.commons.resReturn(null, 400, 'socket接口不能为空');
     }
     if(!cron_id) {
@@ -174,127 +176,126 @@ class socketMockController extends baseController {
 
       return ctx.body = yapi.commons.resReturn(null, 400, '股票代码不能为空');
     }
-    if(cronMap.has(cron_id)) {
-      return ctx.body = yapi.commons.resReturn(null, 400, '当前任务已存在，请勿重复开启');
-    }
-
-    let socket_list = await this.socketModel.get(socket_id);
-    const { topic_id, push_msg_type, push_msg_body } = socket_list;
-    let mock_data = await this.advModel.get(socket_id);
-
-    let mock_script = mock_data && mock_data.mock_script;
-    let is_mock_open = mock_data && mock_data.enable;
+    // if(cronMap.has(cron_id)) {
+    //   return ctx.body = yapi.commons.resReturn(null, 400, '当前任务已存在，请勿重复开启');
+    // }
     try {
-      let res;
-      res = socket_list.res_body;
       try {
-        if (socket_list.res_body_type === 'json') {
-          if (socket_list.res_body_is_json_schema === true) {
-            //json-schema
-            const schema = yapi.commons.json_parse(socket_list.res_body);
-            res = yapi.commons.schemaToJson(schema, {
-              alwaysFakeOptionals: true
-            });
-          } else {
-            // console.log('header', ctx.request.header['content-type'].indexOf('multipart/form-data'))
-            // 处理 format-data
-          
-            if (
-              _.isString(ctx.request.header['content-type']) &&
-              ctx.request.header['content-type'].indexOf('multipart/form-data') > -1
-            ) {
-              ctx.request.body = ctx.request.body.fields;
-            }
-            // console.log('body', ctx.request.body)
-  
-            res = mockExtra(yapi.commons.json_parse(socket_list.res_body), {
-              query: ctx.request.query,
-              body: ctx.request.body,
-              params: Object.assign({}, ctx.request.query, ctx.request.body)
-            });
-            console.log('res',res)
-          }
-          try {
-            res = Mock.mock(res);
-          } catch (e) {
-            console.log('err', e.message);
-            yapi.commons.log(e, 'error');
-          }
-        }
-        let context = {
-          ctx: ctx,
-          mockJson: res,
-          resHeader: {},
-          httpCode: 200,
-          delay: 0
-        };
-        if(is_mock_open && !!mock_script) {
-          await yapi.commons.handleMockScript(mock_script, context);
-        }
-        console.log(context.mockJson);
-        // const content = JSON.stringify(context.mockJson.data);
-        // console.log(context.mockJson.data)
-        // let step =  times && minute && Math.ceil(minute*60/times) > 1 ? Math.ceil(minute*60/times) : 1; 
-        let step =  minute*60* 1000/times
-        let count = 0;
+				let step =  minute*60* 1000/times
+				let count = 0;
         const callback = () => {
           console.log('this is a cron job!')
-         
-          return new Promise((resolve) => {
-            console.log('count', count)
-            if (count >= times) {
-              // 次数达到设置值自动关闭
-              cancelCronInterval(cron_id).then(async () => {
-                   await cronModelInst.up(cron_id, {push_switch_status: false, status: 0});
-              })
-              // resolve({code: 201, msg: '推送完毕'})
-            }
-            const stockCodes = stock_codes.split(',');
-            let i = 0;
-            let freq = 1;
-            if(times && minute) {
-                freq = Math.ceil(times/(minute * 60)) >= 1 ? Math.ceil(times/(minute * 60)) : 1;
-            }
 
-            // while(i < freq) {
-              
-              Promise.all(stockCodes.map(code => {
-                axios.post('http://192.168.90.62:7369/mock/push',{
-                  "topicId": topic_id,
-                  "content": context.mockJson,
-                  "code": code,
-                  "notifyMsgType": push_msg_type,
-                  "notifyRespose": push_msg_body
-                })
-                .then(res => {
-                  console.log(res.data)
-                  resolve(res.data)
-                  if(res.data && res.data.code !== 200) {
-                    // code == 200 成功 100 失败
-                    cancelCronInterval(cron_id).then(async () => {
-                      await cronModelInst.up(cron_id, {push_switch_status: false, status: 0});
-                    })
-                  }
-                })
-                .catch(err => {
-                  // console.log(err)
-                  resolve({data: { code: '100'}})
-                  cancelCronInterval(cron_id).then(async () => {
-                    await cronModelInst.up(cron_id, {push_switch_status: false, status: 0});
-                  })
-                })
-              })).then(()=>{
-                count++
-              })
-            //   i++
-            // }
+          return new Promise((resolve) => {
+
+						socket_ids.forEach(async socket_id =>{
+							
+							let socket_list = await this.socketModel.get(socket_id);
+							const { topic_id, push_msg_type, push_msg_body } = socket_list;
+							let mock_data = await this.advModel.get(socket_id);
+							console.log(socket_list)
+							console.log('==========')
+							console.log(mock_data)
+							let mock_script = mock_data && mock_data.mock_script;
+							let is_mock_open = mock_data && mock_data.enable;
+							let res;
+							res = socket_list.res_body;
+							if (socket_list.res_body_type === 'json') {
+								if (socket_list.res_body_is_json_schema === true) {
+									//json-schema
+									const schema = yapi.commons.json_parse(socket_list.res_body);
+									res = yapi.commons.schemaToJson(schema, {
+										alwaysFakeOptionals: true
+									});
+								} else {
+									// console.log('header', ctx.request.header['content-type'].indexOf('multipart/form-data'))
+									// 处理 format-data
+								
+									if (
+										_.isString(ctx.request.header['content-type']) &&
+										ctx.request.header['content-type'].indexOf('multipart/form-data') > -1
+									) {
+										ctx.request.body = ctx.request.body.fields;
+									}
+									// console.log('body', ctx.request.body)
+				
+									res = mockExtra(yapi.commons.json_parse(socket_list.res_body), {
+										query: ctx.request.query,
+										body: ctx.request.body,
+										params: Object.assign({}, ctx.request.query, ctx.request.body)
+									});
+									console.log('res',res)
+								}
+								try {
+									res = Mock.mock(res);
+								} catch (e) {
+									console.log('err', e.message);
+									yapi.commons.log(e, 'error');
+								}
+							}
+							let context = {
+								ctx: ctx,
+								mockJson: res,
+								resHeader: {},
+								httpCode: 200,
+								delay: 0
+							};
+							if(is_mock_open && !!mock_script) {
+								await yapi.commons.handleMockScript(mock_script, context);
+							}
+							console.log(context.mockJson);
+
+							console.log('count', count)
+							if (count >= times) {
+								// 次数达到设置值自动关闭
+								cancelCronInterval(cron_id).then(async () => {
+										 await cronModelInst.up(cron_id, {push_switch_status: false, status: 0});
+								})
+								// resolve({code: 201, msg: '推送完毕'})
+							}
+							const stockCodes = stock_codes.split(',');
+							let i = 0;
+							let freq = 1;
+							if(times && minute) {
+									freq = Math.ceil(times/(minute * 60)) >= 1 ? Math.ceil(times/(minute * 60)) : 1;
+							}
+	
+								Promise.all(stockCodes.map(code => {
+									axios.post('http://192.168.90.62:7369/mock/push',{
+										"topicId": topic_id,
+										"content": context.mockJson,
+										"code": code,
+										"notifyMsgType": push_msg_type,
+										"notifyRespose": push_msg_body
+									})
+									.then(res => {
+										console.log(res.data)
+										resolve(res.data)
+										if(res.data && res.data.code !== 200) {
+											// code == 200 成功 100 失败
+											cancelCronInterval(cron_id).then(async () => {
+												await cronModelInst.up(cron_id, {push_switch_status: false, status: 0});
+											})
+										}
+									})
+									.catch(err => {
+										// console.log(err)
+										resolve({data: { code: '100'}})
+										cancelCronInterval(cron_id).then(async () => {
+											await cronModelInst.up(cron_id, {push_switch_status: false, status: 0});
+										})
+									})
+								})).then(()=>{
+									count++
+								})
+						})
           })
         }
 
         // const result = await startCron('cron' + cron_id, step, callback);
         startCronInterval(cron_id, callback, step)
         console.log(cronMap)
-        ctx.body = yapi.commons.resReturn({success: true, msg: '开始推送', data: null})
+        return ctx.body = yapi.commons.resReturn({success: true, msg: '开始推送', data: null})
         // if(result == undefined || result.code === 200) {
         //   ctx.body = yapi.commons.resReturn({success: true, msg: '开始推送', data: null})
         // } else {
@@ -322,15 +323,10 @@ class socketMockController extends baseController {
     if(!cron_id) {
       return ctx.body = yapi.commons.resReturn(null, 400, '任务id不能为空');
     }
-    // console.log('cancel cron');
     // // cancelCron(cron_id);
-    //   console.log('=======shcjobs start=========')
-    //   console.log(schedule.scheduledJobs)
-    //   console.log('=======shcjobs end=========')
     await cancelCronInterval(cron_id);
     await cronModelInst.up(cron_id, {push_switch_status: false, status: 0});
-    ctx.body = yapi.commons.resReturn({success: true})
-    console.log(cronMap)
+    return ctx.body = yapi.commons.resReturn({success: true})
   }
 /**
  * 更新后台mock pb类

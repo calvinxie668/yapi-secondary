@@ -23,11 +23,11 @@ export default (state = initialState, action) => {
 };
 
 // 获取定时任务列表
-export function getCronList(socket_id, page, limit) {
+export function getCronList(project_id, page, limit) {
   return {
     type: GET_CRON_LIST,
     payload: axios.get('/api/cron/list', {
-      params: { socket_id, page, limit }
+      params: { project_id, page, limit }
     })
   };
 }

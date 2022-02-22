@@ -132,7 +132,7 @@ class Content extends Component {
     if(isShowCron) {
       InterfaceTabs = Object.assign({}, ...InterfaceTabs, ...{push: {
         component: Push,
-        name: '推送'
+        name: '单次推送'
       }})
     }
     plugin.emitHook('interface_tab', InterfaceTabs);

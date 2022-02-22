@@ -21,6 +21,8 @@ module.exports = {
     name: 'wiki'
   }, {
     name: 'swagger-auto-sync'
+  }, {
+    name: 'socket-push'
   }
   // {
   //   name: 'test'

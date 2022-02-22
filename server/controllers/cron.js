@@ -23,27 +23,15 @@ class cronController extends baseController {
         if(!params.project_id) {
             return (ctx.body = yapi.commons.resReturn(null, 400, '项目id不能为空'));
         }
-        if(!params.socket_id) {
-            return (ctx.body = yapi.commons.resReturn(null, 400, '接口id不能为空'));
-        }
         const project = await this.projectModel.get(params.project_id);
         if(!project) {
             return (ctx.body = yapi.commons.resReturn(null, 400, '项目不存在'));
         }
-        const socket = await this.socketModel.get(params.socket_id);
-        if(!socket) {
-            return (ctx.body = yapi.commons.resReturn(null, 400, '接口不存在'))
-        }
-        if(socket.method.toUpperCase() !== 'PUSH') {
-            return (ctx.body = yapi.commons.resReturn(null, 400, '接口类型不是push'))
-        }
-        const catResult = await this.socketModel.get(params.socket_id);
         let result = await this.Model.save({
             name: params.name,
             project_id: params.project_id,
-            socket_id: params.socket_id,
-            catid: catResult.catid,
             stock_codes: params.stock_codes,
+						push_interface: params.push_interface,
             status: 0,
             times: params.times,
             minute: params.minute,
@@ -65,15 +53,15 @@ class cronController extends baseController {
     }
 
     async list(ctx) {
-        let socket_id = ctx.params.socket_id;
+        let project_id = ctx.params.project_id;
         const {page, limit} = ctx.request.query;
-        if(!socket_id) {
-            return ctx.body = yapi.commons.resReturn(null, 400, '接口id不能为空');
+        if(!project_id) {
+            return ctx.body = yapi.commons.resReturn(null, 400, '项目id不能为空');
         }
         if(!page || !limit) {
             return (ctx.body = yapi.commons.resReturn(null, 400, '参数错误'));
         }
-        let result = await Promise.all([this.Model.listCount(),  this.Model.listWithPage(socket_id, page, limit)])
+        let result = await Promise.all([this.Model.listCount(),  this.Model.listWithPage(project_id, page, limit)])
         //深拷贝对象来修改属性
         result[1] = JSON.parse(JSON.stringify(result[1]))
         for(let i = 0; i < result[1].length; i++) {

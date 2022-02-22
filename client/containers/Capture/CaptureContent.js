@@ -161,32 +161,32 @@ class CaptureContent extends Component {
         getTopicIdList: PropTypes.func
     };
     constructor(props) {
-        super(props);
-        this.state = {
-            showNewRecordTip: false,
-            originData: [],
-            visible: false,
-            details: {},
-            lockReconnect: false,
-            modalVisible: false,
-            memberId: null,
-            curRowIndex: null,
-            closeDisabled: true,
-            isPlay: true
-        }
-        this.refreshing = true;
-        this.recordTableRef = null;
-        this.scrollHandlerTimeout = null;
-        this.stopRefreshTimout = null;
-        this.lastScrollTop = 0;
-        this.stopRefreshTokenScrollTop = null;
-        this.wsStatus = null;
-        this.dataSource = [];
-        this.services = [];
-        this.retry = 3; //断线重连
-        this.wsUrlData = {};
-        this.reconnectTimer = null;
-        this.diffTimer = null
+			super(props);
+			this.state = {
+					showNewRecordTip: false,
+					originData: [],
+					visible: false,
+					details: {},
+					lockReconnect: false,
+					modalVisible: false,
+					memberId: null,
+					curRowIndex: null,
+					closeDisabled: true,
+					isPlay: true
+			}
+			this.refreshing = true;
+			this.recordTableRef = null;
+			this.scrollHandlerTimeout = null;
+			this.stopRefreshTimout = null;
+			this.lastScrollTop = 0;
+			this.stopRefreshTokenScrollTop = null;
+			this.wsStatus = null;
+			this.dataSource = [];
+			this.services = [];
+			this.retry = 3; //断线重连
+			this.wsUrlData = {};
+			this.reconnectTimer = null;
+			this.diffTimer = null;
     }
 
     init = (memberId) => {
@@ -223,20 +223,19 @@ class CaptureContent extends Component {
                         }
                     })
                 }
-                // const msg = {
-                //     type: 'updateSingle',
-                //     data: data
-                // };
-                // myRecordWorker.postMessage(JSON.stringify(msg));
+                const msg = {
+                    type: 'updateSingle',
+                    data: data
+                };
+                myRecordWorker.postMessage(JSON.stringify(msg));
                 // 不在state声明无法更新视图
                 if(data instanceof Object) {
                     this.setState(prevState =>({
                         originData: [...prevState.originData, data]
                     }))
                 }
-            }
-            this.transFormData();
-            this.heartBeat();
+						}
+            // this.transFormData();
         };
         ws.onclose = (evt) => {
             console.log(evt)
@@ -273,14 +272,14 @@ class CaptureContent extends Component {
     }
 // 心跳机制 30s向服务端发送一次心跳 60s超时关闭
     heartBeat = () => {
-        this.heartTimer && clearTimeout(this.heartTimer);
+        this.heartTimer && clearInterval(this.heartTimer);
         this.serverTimer && clearTimeout(this.serverTimer);
-        this.heartTimer = setTimeout(() => {
+        this.heartTimer = setInterval(() => {
             // 给服务端发送心跳包
             ws.send('HeartBeat');
-            this.serverTimer = setTimeout(() => {
-                ws.close()
-            }, 60000)
+            // this.serverTimer = setTimeout(() => {
+            //     ws.close()
+            // }, 60000)
         }, 30000)
     }
 
@@ -300,10 +299,10 @@ class CaptureContent extends Component {
     }
 
     transFormData = () => {
-        const deep_copy_origin_data = JSON.parse(JSON.stringify(this.state.originData));
+        // const deep_copy_origin_data = JSON.parse(JSON.stringify(this.state.originData));
         const msg = {
             type: 'initRecord',
-            data: deep_copy_origin_data
+            data: this.state.originData
         }
         myRecordWorker.postMessage(JSON.stringify(msg));
     }
@@ -378,7 +377,7 @@ class CaptureContent extends Component {
 
     loadPrevious = () => {
         console.log('loadprevious')
-        this.stopPanelRefreshing();
+        // this.stopPanelRefreshing();
         myRecordWorker.postMessage(JSON.stringify({
           type: 'loadMore',
           data: -100
@@ -438,10 +437,14 @@ class CaptureContent extends Component {
        } 
        const scrollTop = this.recordTableRef.scrollTop;
        if(scrollTop < this.lastScrollTop || this.lastScrollTop === 0) {
-         this.detectIfToStopRefreshing(scrollTop);
          this.loadPrevious();
        } else if(scrollTop >= this.lastScrollTop) {
+          this.detectIfToStopRefreshing(scrollTop);
          this.loadNext();
+       }
+       if(scrollTop >= this.recordTableRef.clientHeight) {
+        //下滑刷新视图
+        this.forceUpdate();
        }
        this.lastScrollTop = scrollTop;
     }
@@ -454,7 +457,7 @@ class CaptureContent extends Component {
         this.stopRefreshTimout && clearTimeout(this.stopRefreshTimout);
         this.stopRefreshTimout = setTimeout(() => {
             // if the scrollbar is scrolled up more than 50px, stop refreshing
-            if ((this.stopRefreshTokenScrollTop - currentScrollTop) > 50) {
+            if ((this.stopRefreshTokenScrollTop - currentScrollTop) > 30) {
                 this.stopPanelRefreshing();
                 this.stopRefreshTokenScrollTop = null;
             }
@@ -524,7 +527,7 @@ class CaptureContent extends Component {
 
     handleVisibilitychange = () => {
         if(document.visibilityState === 'hidden' && window.location.href.indexOf('/capture/content') > -1) {
-            console.log('离开')
+            // console.log('离开')
             const date = new Date();
             if(timer){
                 clearInterval(timer)
@@ -533,7 +536,7 @@ class CaptureContent extends Component {
             this.startCountTime(date)
         }
         if(document.visibilityState === 'visible') {
-            console.log('回来');
+            // console.log('回来');
             if(window.location.href.indexOf('/capture/content') > -1) {
                 clearInterval(timer)
             }
@@ -553,7 +556,8 @@ class CaptureContent extends Component {
                         //     dataSource: []
                         // })
                         this.dataSource = [];
-                        let obj = null;
+												let obj = null;
+
                         filterRcordList.forEach((item) => {
                            if(item.type === 'pull')  {
                                obj = {
@@ -586,12 +590,6 @@ class CaptureContent extends Component {
                             //     dataSource: [...prevState.dataSource, obj]
                             // }))
                             this.dataSource.push(obj);
-                            if(data.isForceUpdate) {
-                                this.diffTimer && clearTimeout(this.diffTimer);
-                                this.diffTimer = setTimeout(() => {
-                                    this.forceUpdate();
-                                }, 500)
-                            }
                         })
                     }
                     break;
@@ -647,7 +645,7 @@ class CaptureContent extends Component {
         return (
             <div className="capture-main" style={{ paddingLeft: '32px', paddingRight: '32px' }}>
                 <Icon component={Open} onClick={this.handleOpenModal} style={{marginRight: '20px'}} title="open"/>
-                {this.state.isPlay ? <Icon component={Play} className={!!ws? '': 'disabled'} title="play" style={{marginRight: '20px'}} onClick={() => this.init(this.state.memberId)}/> 
+                {this.state.isPlay ? <Icon component={Play} className={!!ws && JSON.stringify(this.wsUrlData) != '{}' ? '' : 'disabled'} title="play" style={{marginRight: '20px'}} onClick={() => this.init(this.state.memberId)}/> 
                 : <Icon component={Pause} className={this.state.closeDisabled ? 'disabled': ''} title="pause" style={{marginRight: '20px'}} onClick={this.closeConnect}/>}
                 <Icon component={Clear} onClick={this.handleClearData} title="clear" className={!this.dataSource.length? 'disabled': ''}/>
                 <Collapse style={{marginTop: '15px'}}>

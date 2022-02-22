@@ -176,12 +176,12 @@ class socketModel extends baseModel {
           .exec();
       }
 
-      list(project_id, select) {
+      list(project_id, select,  method) {
         select =
           select || '_id title uid path method project_id catid edit_uid status add_time up_time';
         return this.model
           .find({
-            project_id: project_id
+						project_id: project_id
           })
           .select(select)
           .sort({ title: 1 })
@@ -222,7 +222,7 @@ class socketModel extends baseModel {
         return this.model.find({
           method
         })
-        .select('topic_id push_msg_type')
+        .select('_id topic_id push_msg_type title')
         .exec();
       }
 }

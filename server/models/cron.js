@@ -10,9 +10,8 @@ class cronModel extends baseModel {
       return {
         uid: { type: Number, required: true },
         project_id: { type: Number, require: true },
-        socket_id: { type: Number, require: true },
-        catid: { type: Number, required: true },
         name: { type: String, require: true },
+				push_interface: Array,
         status: String,
         push_switch_status: {type: Boolean, default: false},
         times: Number,
@@ -36,12 +35,12 @@ class cronModel extends baseModel {
           .exec();
     }
 
-    listWithPage(socket_id, page, limit) {
+    listWithPage(project_id, page, limit) {
         page = parseInt(page);
         limit = parseInt(limit);
         return this.model
           .find({
-            socket_id: socket_id
+						project_id: project_id,
           })
           .skip((page - 1) * limit)
           .limit(limit)
