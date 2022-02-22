@@ -48,7 +48,7 @@ const startCronInterval = (name, callback, time = 1000) => {
 }
 
 const cancelCronInterval = (name) => {
-  return new Promise((resolve) => {
+  return new Promise(async (resolve) => {
     if(cronMap.has(name)) {
        clearInterval(cronMap.get(name)) 
        cronMap.delete(name);
@@ -189,7 +189,7 @@ class socketMockController extends baseController {
           return new Promise((resolve) => {
 
 						socket_ids.forEach(async socket_id =>{
-							
+
 							let socket_list = await this.socketModel.get(socket_id);
 							const { topic_id, push_msg_type, push_msg_body } = socket_list;
 							let mock_data = await this.advModel.get(socket_id);
@@ -325,7 +325,6 @@ class socketMockController extends baseController {
     }
     // // cancelCron(cron_id);
     await cancelCronInterval(cron_id);
-    await cronModelInst.up(cron_id, {push_switch_status: false, status: 0});
     return ctx.body = yapi.commons.resReturn({success: true})
   }
 /**
