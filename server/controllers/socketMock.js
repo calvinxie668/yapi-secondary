@@ -41,19 +41,17 @@ const startCronInterval = (name, callback, time = 1000) => {
      let cb =  await callback()
       resolve(cb)
     }, time);
-		if(!cronMap.has(name)) {
-			cronMap.set(name, timer);
-		}
+		cronMap.set(name, timer);
   })
 }
 
 const cancelCronInterval = (name) => {
-  return new Promise(async (resolve) => {
-    if(cronMap.has(name)) {
+  return new Promise((resolve) => {
+    // if(cronMap.has(name)) {
        clearInterval(cronMap.get(name)) 
        cronMap.delete(name);
        resolve(true)
-    }
+    // }
   })
 }
 class socketMockController extends baseController {

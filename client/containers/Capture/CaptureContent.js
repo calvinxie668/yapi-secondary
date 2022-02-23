@@ -238,15 +238,16 @@ class CaptureContent extends Component {
             // this.transFormData();
         };
         ws.onclose = (evt) => {
-            console.log(evt)
-            this.wsStatus = evt.type;
-            message.info('抓包服务已断开连接')
-            this.setState({
-                closeDisabled: true,
-                isPlay: true
-            })
-            // this.reconnect();
-            console.log('close')
+          console.log(evt)
+					this.wsStatus = evt.type;
+					this.heartTimer && clearInterval(this.heartTimer);
+					message.info('抓包服务已断开连接')
+					this.setState({
+							closeDisabled: true,
+							isPlay: true
+					})
+					// this.reconnect();
+					console.log('close')
         };
         ws.onerror = (evt) => {
             this.reconnect();
@@ -273,7 +274,7 @@ class CaptureContent extends Component {
 // 心跳机制 30s向服务端发送一次心跳 60s超时关闭
     heartBeat = () => {
         this.heartTimer && clearInterval(this.heartTimer);
-        this.serverTimer && clearTimeout(this.serverTimer);
+        // this.serverTimer && clearTimeout(this.serverTimer);
         this.heartTimer = setInterval(() => {
             // 给服务端发送心跳包
             ws.send('HeartBeat');
@@ -309,8 +310,10 @@ class CaptureContent extends Component {
 
     onRowClick = ({event, index, rowData}) => {
         event.preventDefault();
-        this.stopPanelRefreshing();
-        if(!this.refreshing && rowData != undefined) {
+				if(this.wsStatus !== 'close') {
+					this.stopPanelRefreshing();
+				}
+        if(rowData != undefined) {
             this.setState({
                 curRowIndex: index
             })
@@ -386,7 +389,9 @@ class CaptureContent extends Component {
     
     loadNext = () => {
         console.log('loadnext')
-        this.stopPanelRefreshing();
+				if(this.wsStatus !== 'close') {
+					this.stopPanelRefreshing();
+				}
         myRecordWorker.postMessage(JSON.stringify({
             type: 'loadMore',
             data: 100
@@ -458,7 +463,9 @@ class CaptureContent extends Component {
         this.stopRefreshTimout = setTimeout(() => {
             // if the scrollbar is scrolled up more than 50px, stop refreshing
             if ((this.stopRefreshTokenScrollTop - currentScrollTop) > 30) {
-                this.stopPanelRefreshing();
+								if(this.wsStatus !== 'close') {
+									this.stopPanelRefreshing();
+								}
                 this.stopRefreshTokenScrollTop = null;
             }
         }, 50);
