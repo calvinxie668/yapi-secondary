@@ -37,11 +37,12 @@ const cancelCron = async (id) => {
 const startCronInterval = (name, callback, time = 1000) => {
   if(!name && typeof callback != 'function') return
   return new Promise(resolve => {
+		let cb = null;
     let timer = setInterval(async () => {
-     let cb =  await callback()
-      resolve(cb)
+    	 cb =  await callback()
     }, time);
 		cronMap.set(name, timer);
+		resolve(cb)
   })
 }
 
