@@ -383,7 +383,7 @@ class CaptureContent extends Component {
         // this.stopPanelRefreshing();
         myRecordWorker.postMessage(JSON.stringify({
           type: 'loadMore',
-          data: -100
+          data: 100
         }));
       }
     
@@ -394,7 +394,7 @@ class CaptureContent extends Component {
 				}
         myRecordWorker.postMessage(JSON.stringify({
             type: 'loadMore',
-            data: 100
+            data: -100
         }));
     }
 
@@ -417,6 +417,10 @@ class CaptureContent extends Component {
         this.setState({
             "showNewRecordTip": false
         });
+				const scrollTop = this.recordTableRef.scrollTop;
+				if(scrollTop != 0) {
+					this.recordTableRef && this.recordTableRef.scrollTo(0, 0);
+				}
         this.refreshing = true;
         myRecordWorker.postMessage(JSON.stringify({
             type: 'updateRefreshing',
@@ -774,7 +778,7 @@ class CaptureContent extends Component {
                             <Column label="Start" dataKey="start_time"  width={160}></Column>
                             <Column label="Duration" dataKey="duration"  width={120} cellRenderer={({rowData}) => {
                               if(rowData == undefined) return (<span></span>)  //hack 下拉滚动条会触发react-virtualized table组件下defaultCellDataGetter.js 文件 代码报错
-                              return (<span>{type === 'pull' ? rowData.duration + 'ms' : '--'}</span>)   
+                              return (<span>{rowData.type === 'pull' ? rowData.duration + 'ms' : '--'}</span>)   
                             }}></Column>
                         </Table>
                     )}
