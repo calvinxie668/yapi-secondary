@@ -1076,7 +1076,7 @@ class InterfaceEditForm extends Component {
                     <RadioGroup>
                       <Radio value="form">form</Radio>
                       <Radio value="json">json</Radio>
-                      <Radio value="file">file</Radio>
+                      {/* <Radio value="file">file</Radio> */}
                       <Radio value="raw">raw</Radio>
                     </RadioGroup>
                   )}

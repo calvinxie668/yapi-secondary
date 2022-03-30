@@ -714,6 +714,11 @@ let routerConfig = {
       action: 'del',
       path: 'del',
       method: 'post'
+    },
+    {
+      action: 'listFilter',
+      path: 'list_filter',
+      method: 'post'
     }
   ],
   capture: [

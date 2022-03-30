@@ -23,12 +23,14 @@ export default (state = initialState, action) => {
 };
 
 // 获取定时任务列表
-export function getCronList(project_id, page, limit) {
+export function getCronList({project_id, page, limit, keyword} = {}) {
+	const url = typeof keyword === 'string' || keyword == undefined ? '/api/cron/list' : '/api/cron/list_filter'
+	const payload =typeof keyword === 'string' || keyword == undefined ? axios.get(url, {
+		params: { project_id, page, limit, keyword }
+	}) : axios.post(url, ...arguments)
   return {
     type: GET_CRON_LIST,
-    payload: axios.get('/api/cron/list', {
-      params: { project_id, page, limit }
-    })
+    payload: payload
   };
 }
 

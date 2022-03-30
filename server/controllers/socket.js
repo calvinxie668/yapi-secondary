@@ -204,7 +204,7 @@ class socketController extends baseController {
     params.res_body_type = params.res_body_type ? params.res_body_type.toLowerCase() : 'json';
     // params.path = params.method === 'PULL' ? params.req_msg_type : params.push_msg_type;
       
-      let checkRepeat = await this.Model.checkRepeat(params.project_id, params.path, params.method);
+      let checkRepeat = await this.Model.checkRepeat(params.path, params.method);
 
       if (checkRepeat > 0) {
         return (ctx.body = yapi.commons.resReturn(
@@ -493,7 +493,6 @@ class socketController extends baseController {
       (params.path !== interfaceData.path || params.method !== interfaceData.method)
     ) {
       let checkRepeat = await this.Model.checkRepeat(
-        interfaceData.project_id,
         params.path,
         params.method
       );

@@ -8,6 +8,7 @@ import axios from 'axios';
 import { formatTime } from '../../client/common.js';
 import { withRouter } from 'react-router-dom';
 import AceEditor from 'client/components/AceEditor/AceEditor';
+import CronFilter from './cronFilter.js';
 const http  =  require('../../common/http-debounce.js'); 
 const FormItem = Form.Item;
 const Option = Select.Option;
@@ -37,6 +38,8 @@ class CronPush  extends Component {
         super(props);
         this.state = {
             visible: false,  
+						filterVisible: false,
+						keyword: '',
             tab: 'single',
             pagination: {
               current: 1,
@@ -160,12 +163,12 @@ class CronPush  extends Component {
 
     handleSubmitCron = (e, type) => {
         e.preventDefault();
-        let projectId = this.props.match.params.id;
+        let project_id = this.props.match.params.id;
         if(type === 'add') {
           this.props.form.validateFieldsAndScroll(['stock_codes', 'times', 'minute', 'name', 'push_interface'], (err, values) => {
             if(!err) {
               let params = {
-                project_id: projectId,
+                project_id: project_id,
                 ...values
               }
               console.log(params)
@@ -173,7 +176,7 @@ class CronPush  extends Component {
               .then(res => {
                 if (res.data.errcode === 0) {
                   message.success('新建成功');
-                  this.props.getCronList(projectId, 1 , this.state.pagination.pageSize)
+                  this.props.getCronList({project_id, page: 1 ,limit: this.state.pagination.pageSize})
                   .then(() => {
                     const data = Object.assign({}, this.state.pagination,  { total: this.props.data.total })
                     this.setState({
@@ -195,7 +198,7 @@ class CronPush  extends Component {
           this.props.form.validateFieldsAndScroll(['stock_codes', 'times', 'minute', 'name', 'push_interface'], (err, values) => {
             if(!err) {
               let params = {
-                project_id: projectId,
+                project_id: project_id,
                 id: this.state.cronId,
                 ...values
               }
@@ -219,7 +222,7 @@ class CronPush  extends Component {
       };
       updateList () {
         let project_id = this.props.match.params.id;
-        this.props.getCronList(project_id, this.state.pagination.current , this.state.pagination.pageSize)
+        this.props.getCronList({project_id, page: this.state.pagination.current , limit: this.state.pagination.pageSize})
         .then(() => {
           const data = Object.assign({}, this.state.pagination,  { total: this.props.data.total })
           this.setState({
@@ -263,8 +266,8 @@ class CronPush  extends Component {
     
       handelDelCron = (e, text, record) => {
         e.preventDefault();
-        let projectId = this.props.match.params.id;
-        axios.post('/api/cron/del', {id: record._id, project_id: projectId})
+        let project_id = this.props.match.params.id;
+        axios.post('/api/cron/del', {id: record._id, project_id: project_id})
         .then(res => {
           message.success('删除成功');
           if(record.push_switch_status) {
@@ -418,7 +421,7 @@ class CronPush  extends Component {
       UNSAFE_componentWillMount () {
 				this.props.getTopicIdList({method: 'PUSH'});
         let project_id = this.props.match.params.id;
-        this.props.getCronList(project_id, 1 , this.state.pagination.pageSize)
+        this.props.getCronList({project_id,page: 1 , limit: this.state.pagination.pageSize})
         .then(() => {
             const data = Object.assign({}, this.state.pagination,  { total: this.props.data.total })
             this.setState({ 
@@ -472,6 +475,32 @@ class CronPush  extends Component {
         });
     }
 
+		handleOnsearch = (value) => {
+			const keyword = value.trim();
+			this.setState({keyword});
+			let project_id = this.props.match.params.id;
+			this.props.getCronList({project_id, page: this.state.pagination.current , limit: this.state.pagination.pageSize, keyword})
+			.then(() => {
+				const data = Object.assign({}, this.state.pagination,  { total: this.props.data.total })
+				this.setState({
+					pagination: data
+				})
+			});
+		}
+    
+		handleFilter = val => {
+			const keyword = val
+			this.setState({keyword});
+			let project_id = this.props.match.params.id;
+			this.props.getCronList({project_id, page: this.state.pagination.current , limit: this.state.pagination.pageSize, keyword})
+			.then(() => {
+				const data = Object.assign({}, this.state.pagination,  { total: this.props.data.total })
+				this.setState({
+					pagination: data
+				})
+			});
+		}
+
     render() {
         const { getFieldDecorator } = this.props.form;
         const aceContent = this.state.content;
@@ -493,11 +522,16 @@ class CronPush  extends Component {
         };
         return (
           <div style={{paddingTop: '20px', backgroundColor: '#fff'}}>
+						<CronFilter filterVisible={this.state.filterVisible} onClose={() => this.setState({filterVisible: false})} filter={this.handleFilter}></CronFilter>
             <div>
                 <Row>
                     <Col span={4} offset={1}>
-                        <Button type="primary" onClick={() => this.showModal('add')}>添加任务</Button>
+                        <Button type="primary" onClick={() => this.showModal('add')} icon="plus">添加任务</Button>
+                        <Button type="primary" onClick={() => this.setState({filterVisible: true})} style={{marginLeft: '10px'}} icon="filter">高级筛选</Button>
                     </Col>
+										<Col span={4} offset={14}>
+											<Input.Search placeholder='搜索名称、股票代码' onSearch={this.handleOnsearch}></Input.Search>
+										</Col>
                 </Row>
                 <Row style={{ marginTop: '15px'}}>
                     <Col span={22} offset={1}>
@@ -515,7 +549,7 @@ class CronPush  extends Component {
                             this.setState({
                                 pagination: data
                             })
-                            this.props.getCronList(project_id, page, pageSize)
+                            this.props.getCronList({project_id, page, limit: pageSize, keyword: this.state.keyword})
                             .then(() => {
                                 const data = Object.assign({}, this.state.pagination,  { total: this.props.data.total })
                                 this.setState({

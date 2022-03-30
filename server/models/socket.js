@@ -117,9 +117,8 @@ class socketModel extends baseModel {
           .exec();
     }
 
-    checkRepeat(id, path, method) {
+    checkRepeat(path, method) {
         return this.model.countDocuments({
-          project_id: id,
           path: path,
           method: method
         });

@@ -54,29 +54,45 @@ class cronController extends baseController {
 
     async list(ctx) {
         let project_id = ctx.params.project_id;
-        const {page, limit} = ctx.request.query;
+        const {page, limit, keyword} = ctx.request.query;
         if(!project_id) {
             return ctx.body = yapi.commons.resReturn(null, 400, '项目id不能为空');
         }
         if(!page || !limit) {
             return (ctx.body = yapi.commons.resReturn(null, 400, '参数错误'));
         }
-        let result = await Promise.all([this.Model.listCount(),  this.Model.listWithPage(project_id, page, limit)])
-        //深拷贝对象来修改属性
-        result[1] = JSON.parse(JSON.stringify(result[1]))
-        for(let i = 0; i < result[1].length; i++) {
-            let item = result[1][i]
-            if(item.uid) {
-                const userinfo  = await this.userModel.findById(item.uid)
-                result[1][i].username = userinfo.username
-            }
-        }
+        let result = await Promise.all([this.Model.listCount({project_id}),  this.Model.listWithPage(project_id, page, limit, keyword)])
+        // //深拷贝对象来修改属性
+        // result[1] = JSON.parse(JSON.stringify(result[1]))
+        // for(let i = 0; i < result[1].length; i++) {
+        //     let item = result[1][i]
+        //     if(item.uid) {
+        //         const userinfo  = await this.userModel.findById(item.uid)
+        //         result[1][i].username = userinfo.username
+        //     }
+        // }
         ctx.body = yapi.commons.resReturn({
             total: result[0],
             list: result[1]
         });
 
     }
+
+		async listFilter(ctx) {
+			let project_id = ctx.params.project_id;
+			let {page, limit, keyword}= ctx.request.body;
+			if(!project_id) {
+				return ctx.body = yapi.commons.resReturn(null, 400, '项目id不能为空');
+			}
+			if(!page || !limit) {
+				return (ctx.body = yapi.commons.resReturn(null, 400, '参数错误'));
+			}
+			let result = await Promise.all([this.Model.listCount({project_id}),  this.Model.listFilter(project_id, page, limit, keyword)])
+			ctx.body = yapi.commons.resReturn({
+				total: result[0],
+				list: result[1]
+			});
+		}
 
     async up(ctx) {
         let params = ctx.params;

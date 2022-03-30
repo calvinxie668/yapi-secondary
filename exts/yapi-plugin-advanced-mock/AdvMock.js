@@ -18,7 +18,8 @@ class AdvMock extends Component {
     this.state = {
       enable: false,
       mock_script: '',
-      tab: 'case',
+			tab: 'case',
+			isNeedCase: true
     };
   }
 
@@ -41,7 +42,13 @@ class AdvMock extends Component {
     });
   };
 
-  UNSAFE_componentWillMount() {
+	UNSAFE_componentWillMount() {
+		if (this.props.location.pathname.indexOf('socket') > -1) { 
+			this.setState({
+				isNeedCase: false,
+				tab: 'script'
+			})
+		}
     this.getAdvMockData();
   }
 
@@ -102,7 +109,7 @@ class AdvMock extends Component {
     const isShowCase = tab === 'case';
     return (
       <div style={{ padding: '20px 10px' }}>
-        <div style={{ textAlign: 'center', marginBottom: 20 }}>
+        <div style={{ textAlign: 'center', marginBottom: 20, display: this.state.isNeedCase ? 'block': 'none' }} >
           <Radio.Group value={tab} size="large" onChange={this.handleTapChange}>
             <Radio.Button value="case">期望</Radio.Button>
             <Radio.Button value="script">脚本</Radio.Button>
