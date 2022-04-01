@@ -172,8 +172,15 @@ self.updateSingle = function (record) {
     recordList.forEach((item, index) => {
       item._render = false;
       item.originIndex = index + 1;
-    });
-    self.calculateFilteredRecords(false, [record]);
+		});
+		if (self.filterObj.type != undefined && self.filterObj.type != 'all') {
+			if (record.type == self.filterObj.type) {
+				// 筛选pull /push
+				self.calculateFilteredRecords(false, [record]);
+			}
+		} else {
+				self.calculateFilteredRecords(false, [record]);
+		}
 };
 
 self.addEventListener('message', e => {

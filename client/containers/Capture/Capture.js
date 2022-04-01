@@ -33,9 +33,9 @@ class Capture extends Component {
 
     }
 
-    UNSAFE_componentWillMount() {
+		UNSAFE_componentWillMount() {
         this.props.setBreadcrumb([{ name: 'socket抓包' }]);
-    }
+		}
     render () {
         return (
             <div className="warpper">

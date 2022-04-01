@@ -213,7 +213,7 @@ class CaptureContent extends Component {
         };
         ws.onmessage = (evt) => {
             // console.log('message')
-            // console.log(evt)
+            console.log(evt)
             if(evt.data.indexOf('{') > -1) {
                 let data = Object.assign(JSON.parse(evt.data), {origin: evt.origin})
                 if(data.type.toUpperCase() === 'PUSH') {
@@ -314,15 +314,13 @@ class CaptureContent extends Component {
 					this.stopPanelRefreshing();
 				}
         if(rowData != undefined) {
-            this.setState({
+					this.setState({
+								details: rowData,
                 curRowIndex: index
-            })
-            this.setState({
-                details: rowData
-            })
-            this.showDrawer();
+          })
+          this.showDrawer();
         }
-}
+			}
 
     rowStyleFormat = (row) => {
         if(row.index < 0) return
@@ -629,7 +627,8 @@ class CaptureContent extends Component {
     }
 
     componentWillUnmount () {
-        window.removeEventListener('visibilitychange', this.handleVisibilitychange);
+			window.removeEventListener('visibilitychange', this.handleVisibilitychange);
+			this.handleClearData()
     }
 
     render () {
@@ -787,7 +786,7 @@ class CaptureContent extends Component {
                 </div>
                 {this.state.visible &&
                 <Drawer
-                    title={<span style={{paddingRight: '5px'}}>{originIndex}<Tag color={color} key={type}>{type}</Tag>{application}</span>}
+                    title={<span><span style={{paddingRight: '5px'}}>{originIndex}</span><Tag color={color} key={type}>{type}</Tag>{application}</span>}
                     placement="right"
                     width={760}
                     onClose={this.onClose}
