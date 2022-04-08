@@ -14,6 +14,7 @@ const _ = require('underscore');
 const Ajv = require('ajv');
 const Mock = require('mockjs');
 const sandboxFn = require('./sandbox');
+const stockJson = require('./stockData.json');
 
 
 
@@ -24,8 +25,13 @@ const { schemaValidator } = require('../../common/utils');
 const http = require('http');
 
 jsf.extend('mock', function () {
+	Mock.Random.extend({
+		stockData: function(key) {
+			return this.pick(stockJson)[key]
+		}
+	})
   return {
-    mock: function (xx) {
+		mock: function (xx) {
       return Mock.mock(xx);
     }
   };
@@ -50,7 +56,7 @@ exports.schemaToJson = function (schema, options = {}) {
   Object.assign(options, defaultOptions);
 
   jsf.option(options);
-  let result;
+	let result;
   try {
     result = jsf(schema);
   } catch (err) {
@@ -614,6 +620,11 @@ exports.getUserdata = async function getUserdata(uid, role) {
 
 // 处理mockJs脚本
 exports.handleMockScript = async function (script, context) {
+	Mock.Random.extend({
+			stockData: function(date) {
+					return this.pick(stockJson)
+			}
+	})
   let sandbox = {
     header: context.ctx.header,
     query: context.ctx.query,
@@ -623,7 +634,7 @@ exports.handleMockScript = async function (script, context) {
     resHeader: context.resHeader,
     httpCode: context.httpCode,
     delay: context.httpCode,
-    Random: Mock.Random,
+		Random: Mock.Random,
     Mock: Mock.mock,
   };
   sandbox.cookie = {};
@@ -676,4 +687,35 @@ exports.createWebAPIRequest = function (ops) {
     });
     http_client.end();
   });
+}
+
+function getHqStockData() { 
+	return new Promise(function (resolve, reject) { 
+		 let req = '';
+		let http_client = http.request({
+			hostname: 'hqr.hstong.com',
+			path: '/hs/definition/definitionNew.json',
+			method: 'GET',
+		}, function (res) {
+			res.on('error', function (err) {
+				reject(err);
+			});
+			res.setEncoding('utf8');
+			if (res.statusCode != 200) {
+				reject({ message: 'statusCode != 200' });
+			} else {
+				res.on('data', function (chunk) {
+					req += chunk;
+				});
+				res.on('end', function () {
+					resolve(req);
+				});
+			}
+
+		});
+		http_client.on('error', (e) => {
+      reject({ message: `request error: ${e.message}` });
+    });
+    http_client.end();
+	})
 }

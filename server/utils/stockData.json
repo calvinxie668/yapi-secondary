@@ -1,0 +1,52 @@
+[
+	{
+		"name": "腾讯控股",
+		"code": "00700.HK",
+		"dataType": "10000"
+	},
+	{
+		"name": "阿里巴巴",
+		"code": "BABA",
+		"dataType": "20000"
+	},
+	{
+		"name": "电讯盈科",
+		"code": "00008.HK",
+		"dataType": "10000"
+	},
+	{
+		"name": "商汤-W",
+		"code": "00020.HK",
+		"dataType": "10000"
+	},
+	{
+		"name": "中国新经济投资",
+		"code": "00080.HK",
+		"dataType": "10000"
+	},
+	{
+		"name": "MicroStrategy Incorporated Class A",
+		"code": "MSTR",
+		"dataType": "20000"
+	},
+	{
+		"name": "Elmira Savings Bank",
+		"code": "ESBK",
+		"dataType": "20000"
+	},
+	{
+		"name": "Apple Hospitality REIT Inc",
+		"code": "APLE",
+		"dataType": "20000"
+	},
+	{
+		"name": "中国石化",
+		"code": "600028.SH",
+		"dataType": "30000"
+	},
+	{
+		"name": "中国医药",
+		"code": "600056.SH",
+		"dataType": "30000"
+	}
+]

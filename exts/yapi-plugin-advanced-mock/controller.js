@@ -10,12 +10,12 @@ class advMockController extends baseController {
     super(ctx);
     this.Model = yapi.getInst(advModel);
     this.caseModel = yapi.getInst(caseModel);
-    this.userModel = yapi.getInst(userModel);
+		this.userModel = yapi.getInst(userModel);
   }
 
   async getMock(ctx) {
     let id = ctx.query.interface_id;
-    let mockData = await this.Model.get(id);
+		let mockData = await this.Model.get(id);
     if (!mockData) {
       return (ctx.body = yapi.commons.resReturn(null, 408, 'mock脚本不存在'));
     }

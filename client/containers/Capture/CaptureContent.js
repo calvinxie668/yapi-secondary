@@ -213,7 +213,7 @@ class CaptureContent extends Component {
         };
         ws.onmessage = (evt) => {
             // console.log('message')
-            console.log(evt)
+            // console.log(evt)
             if(evt.data.indexOf('{') > -1) {
                 let data = Object.assign(JSON.parse(evt.data), {origin: evt.origin})
                 if(data.type.toUpperCase() === 'PUSH') {

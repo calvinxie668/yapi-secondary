@@ -12,7 +12,7 @@ fi
 
 echo '安装依赖'
 npm install 
-echo '执行pathc'
+echo '执行patch'
 npm run postinstall
 echo '开始打包...'
 ykit pack -m
