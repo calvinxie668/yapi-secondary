@@ -334,8 +334,8 @@ async function crossRequest(defaultOptions, preScript, afterScript, commonContex
           });
         }
         resolve(data);
-      };
-
+			};
+			console.log(options)
       window.crossRequest(options);
     });
   }

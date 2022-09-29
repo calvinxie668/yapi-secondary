@@ -41,7 +41,7 @@ class NavBar extends Component {
                           </span>
                       }
                     >
-                        <Menu.Item key="/capture/service">服务管理</Menu.Item>
+                        {/* <Menu.Item key="/capture/service">服务管理</Menu.Item> */}
                         <Menu.Item key="/capture/content">抓包</Menu.Item>
                     </SubMenu>
                 </Menu>

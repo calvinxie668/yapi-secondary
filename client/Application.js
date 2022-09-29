@@ -66,10 +66,12 @@ let AppRoute = {
   capture: {
     path: '/capture',
     component: Capture,
-    children: [{
-      path: '/capture/service',
-      component: Service
-    },{
+		children: [
+			// {
+      // path: '/capture/service',
+      // component: Service
+			// },
+			{
       path: '/capture/content',
       component: Content
     }]

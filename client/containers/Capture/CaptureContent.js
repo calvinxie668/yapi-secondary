@@ -7,7 +7,7 @@ import { formatTime } from '../../common.js';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { setWS } from '../../reducer/modules/other.js';
-import { getCaptureList } from '../../reducer/modules/capture.js';
+import { getCaptureList, getCaptureListByJava, findCaptureConnnetIp } from '../../reducer/modules/capture.js';
 import { getTopicIdList } from '../../reducer/modules/interface.js';
 import RecordWorker from "worker-loader?inline!./CaptureWorker.js";
 import momnet from 'moment';
@@ -75,11 +75,12 @@ const SelectCaprtureService = forwardRef((props, ref) => {
     const handleSubmit = e => {
         e.preventDefault();
         props.form.validateFieldsAndScroll((err, values) => {
-          if (!err) {
-            const { memberId } = values;
-            
-            props.init(memberId);
-            hideModal();
+					if (!err) {
+            const { memberId, service } = values;
+						props.findConnectIp({ memberId, serverName: service }, () => { 
+							props.init(memberId);
+							hideModal();
+						})
           }
         });
     };
@@ -113,10 +114,10 @@ const SelectCaprtureService = forwardRef((props, ref) => {
                                }
                            ]
                        })(
-                        <Select onSelect={onSelect} placeholder="please select a service">
+                        <Select  placeholder="please select a service">
                             {
-                                props.options.map(item => {
-                                   return <Select.Option value={item._id} key={item._id}>{`${item.name}-【${item.remark}】`}</Select.Option>
+                                props.options.map((item, index) => {
+																	return <Select.Option value={item} key={index}>{ item }</Select.Option>
                                 })
                             }
                         </Select>
@@ -150,7 +151,9 @@ const CaptureServiceForm =  Form.create()(SelectCaprtureService);
     }),
     {
       setWS,
-      getCaptureList,
+			getCaptureList,
+			getCaptureListByJava,
+			findCaptureConnnetIp,
       getTopicIdList
     }
   )
@@ -193,8 +196,8 @@ class CaptureContent extends Component {
         if(!memberId) return;
         if(JSON.stringify(this.wsUrlData) === '{}') return;
         // ws = new WebSocket(`ws://a4edab67387824305b6b2b16ec2ce0ce-28ea69bc91b31528.elb.ap-east-1.amazonaws.com:6699/sandbox/hq-interface-push-pc-daily/module/websocket/hq-watch-push-module?memberId=${memberId}`);
-        const wsDomain = this.wsUrlData.extranet;
-        const wsPath = this.wsUrlData.name;
+        const wsDomain = this.wsUrlData.clientIp;
+        const wsPath = this.wsUrlData.serverName;
         let port = 6699;
         if(!/(\.com|\.net|.cn)$/.test(wsDomain) && this.wsUrlData.port) {
             port = this.wsUrlData.port;
@@ -496,14 +499,24 @@ class CaptureContent extends Component {
         this.init(memberId)
     }
 
-    onSelected = (value) => {
-        this.wsUrlData = this.services.filter(item => item._id === value )[0]
-    }
+    // onSelected = (value) => {
+    //     this.wsUrlData = this.services.filter(item => item === value )[0]
+    // }
 
     getOptions = async e => {
-        const data = await this.props.getCaptureList(1, 1000);
-        this.services = data.payload.data.data.list;
-    }
+			const data = await this.props.getCaptureListByJava();
+      this.services = data.payload.data.data;
+		}
+	
+	findConnectIp = async (params, cb) => {
+		const data = await this.props.findCaptureConnnetIp(params)
+		if (!!data.payload.data.success) {
+			this.wsUrlData = data.payload.data.data
+			cb && cb()
+		} else { 
+			message.info('用户不存在或者未连接上socket服务')
+		}
+	}
 
     updateFilter = () => {
         this.props.form.validateFields((err, values) => {
@@ -571,7 +584,7 @@ class CaptureContent extends Component {
                            if(item.type === 'pull')  {
                                obj = {
                                    start_time: formatTime(item.request.requestTime/1000),
-                                   application:  this.wsUrlData.name,
+                                   application:  this.wsUrlData.serverName,
                                    duration: item.costTime,
                                    origin: item.origin,
                                    path: item.request.requestMsgType,
@@ -584,7 +597,7 @@ class CaptureContent extends Component {
                            } else {
                                obj = {
                                     start_time: '--',
-                                    application:  this.wsUrlData.name,
+                                    application:  this.wsUrlData.serverName,
                                     origin: item.origin,
                                     path: item.msgType,
                                     type: item.type,
@@ -860,9 +873,10 @@ class CaptureContent extends Component {
                     visible={this.state.modalVisible} 
                     close={this.handleCloseModal} 
                     wrappedComponentRef={formRef} 
-                    init={this.initRecord}
+										init={this.initRecord}
+										findConnectIp={ this.findConnectIp }
                     options={this.services}
-                    onSelected={this.onSelected}
+                    // onSelected={this.onSelected}
                     wsStatus={this.wsStatus}>
                 </CaptureServiceForm>}
             </div>
