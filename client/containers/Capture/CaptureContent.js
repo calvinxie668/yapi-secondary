@@ -505,13 +505,13 @@ class CaptureContent extends Component {
 
     getOptions = async e => {
 			const data = await this.props.getCaptureListByJava();
-      this.services = data.payload.data.data;
+      this.services = data.payload.data.data.data;
 		}
 	
 	findConnectIp = async (params, cb) => {
 		const data = await this.props.findCaptureConnnetIp(params)
-		if (!!data.payload.data.success) {
-			this.wsUrlData = data.payload.data.data
+		if (!!data.payload.data.data.success) {
+			this.wsUrlData = data.payload.data.data.data
 			cb && cb()
 		} else { 
 			message.info('用户不存在或者未连接上socket服务')

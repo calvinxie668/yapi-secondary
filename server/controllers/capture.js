@@ -2,6 +2,7 @@ const baseController = require('./base.js');
 const yapi = require('../yapi.js');
 const captureModel = require('../models/capture.js');
 const userModel = require('../models/user.js');
+const axios = require('axios');
 
 class captureController extends baseController {
     constructor(ctx) {
@@ -86,7 +87,64 @@ class captureController extends baseController {
         if(!params.id) return ctx.body = yapi.commons.resReturn(null, 400, 'id不能为空');
         let result = await this.Model.del(params.id);
         ctx.body = yapi.commons.resReturn(result);
+		}
+	/**
+	 * 获取java提供的socket服务列表
+	 * @param {*} ctx 
+	 */
+	async getCaptureList(ctx) {
+    function getCaptureListByJava() {
+      return new Promise(resolve => {
+        axios({
+          url: 'http://192.168.91.28:2536/wireshark/server/list',
+          method: 'get',
+          timeout: 0
+       }).then(res => {
+         resolve(res.data)
+           
+       }).catch(err => {
+           console.log(err)
+       })
+      })
     }
+   let result =  await getCaptureListByJava()
+   if (result.success) {
+    ctx.body = yapi.commons.resReturn(result);
+   } else {
+     ctx.body = yapi.commons.resReturn(null, 400, '失败');
+   }
+	}
+	/**
+	 * 通过调用java接口获取当前用户连接的ip
+	 * @param {*} ctx 
+	 */
+	async findConnectIp(ctx) {
+		const params = ctx.params 
+		console.log(params)
+    function findCaptureConnnetIp() {
+      return new Promise(resolve => {
+        axios({
+          url: 'http://192.168.91.28:2536/wireshark/server/find',
+					method: 'get',
+					params,
+          timeout: 0
+				}).then(res => {
+         resolve(res.data)
+           
+       }).catch(err => {
+           console.log(err)
+       })
+      })
+		}
+		try {
+			let result = await findCaptureConnnetIp()
+			ctx.body = yapi.commons.resReturn(result);
+		} catch (e) {
+			  ctx.body = yapi.commons.resReturn(null, 400, e.message);
+		}
+	}
+	
+
 
 }
 

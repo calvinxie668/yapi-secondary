@@ -733,6 +733,16 @@ let routerConfig = {
       method: 'get'
     },
     {
+      action: 'getCaptureList',
+      path: 'getCaptureList',
+      method: 'get'
+    },
+    {
+      action: 'findConnectIp',
+      path: 'findConnectIp',
+      method: 'get'
+    },
+    {
       action: 'up',
       path: 'up',
       method: 'post'

@@ -42,7 +42,7 @@ export default (state = initialState, action) => {
 export function getCaptureListByJava(page, limit) {
   return {
     type: GET_CAPTURE_LIST_BY_JAVA,
-    payload: axios.get('http://192.168.91.28:2536/wireshark/server/list')
+    payload: axios.get('/api/capture/getCaptureList')
   };
 }
 		
@@ -50,7 +50,7 @@ export function getCaptureListByJava(page, limit) {
 export function findCaptureConnnetIp(params) {
   return {
     type: FIND_CAPTURE_CONNECT_IP,
-    payload: axios.get('http://192.168.91.28:2536/wireshark/server/find', {
+    payload: axios.get('/api/capture/findConnectIp', {
       params
     })
   };
