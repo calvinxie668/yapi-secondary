@@ -96,7 +96,7 @@ class captureController extends baseController {
     function getCaptureListByJava() {
       return new Promise(resolve => {
         axios({
-          url: 'http://192.168.91.28:2536/wireshark/server/list',
+          url: 'http://10.73.11.211:2536/wireshark/server/list',
           method: 'get',
           timeout: 0
        }).then(res => {
@@ -124,7 +124,7 @@ class captureController extends baseController {
     function findCaptureConnnetIp() {
       return new Promise(resolve => {
         axios({
-          url: 'http://192.168.91.28:2536/wireshark/server/find',
+          url: 'http://10.73.11.211:2536/wireshark/server/find',
 					method: 'get',
 					params,
           timeout: 0
