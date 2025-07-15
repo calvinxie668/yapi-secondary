@@ -4,6 +4,26 @@
 * socket接口支持mock
 * socket接口抓包可视化
 
+### 二开项目源码目录
+
+client/containers/Capture/
+├── Capture.js
+├── Capture.scss
+├── CaptureContent.js
+├── CaptureService.js
+├── CaptureWorker.js
+├── NavBar.js
+└── NavBar.scss
+client/reducer/modules
+└── capture.js
+
+server/models
+├── socket.js
+├── socketCat.js
+└── socketOncePush.js
+server/controllers
+├── socket.js
+└── socketMock.js
 
 ## YApi  可视化接口管理平台
 
