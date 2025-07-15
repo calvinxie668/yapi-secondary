@@ -5,7 +5,7 @@
 * socket接口抓包可视化
 
 ### 二开项目源码目录
-
+```bash
 client/containers/Capture/
 ├── Capture.js
 ├── Capture.scss
@@ -24,6 +24,8 @@ server/models
 server/controllers
 ├── socket.js
 └── socketMock.js
+
+```
 
 ## YApi  可视化接口管理平台
 
